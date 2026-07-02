@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 import ProEditor from '../components/ProEditor';
 import NotificationBell from '../components/NotificationBell';
+import { Palette, MessageCircle, Star, ImageOff, CheckCircle2, Building, Inbox, Upload, Trash2, ArrowLeft, LayoutTemplate, Briefcase, User, Sparkles, Image as ImageIcon, Camera, DollarSign, ExternalLink, Activity, FolderPlus } from 'lucide-react';
 
 function DesignerPortal() {
   const navigate = useNavigate();
@@ -545,7 +546,7 @@ function DesignerPortal() {
         <div className="w-full max-w-md">
           <div className="bg-slate-800 rounded-3xl p-8 shadow-2xl border border-slate-700">
             <div className="text-center mb-8">
-              <span className="text-5xl mb-4 block">🎨</span>
+              <div className="w-16 h-16 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20"><Palette className="w-8 h-8" /></div>
               <h1 className="text-2xl font-black text-white">Apply to Become a Designer</h1>
               <p className="text-slate-400 text-sm mt-2">You are signed in with your existing CampSend account.</p>
             </div>
@@ -633,7 +634,7 @@ function DesignerPortal() {
         <div className="w-full max-w-md">
           <div className="bg-slate-800 rounded-3xl p-8 shadow-2xl border border-slate-700">
             <div className="text-center mb-8">
-              <span className="text-5xl mb-4 block">🎨</span>
+              <div className="w-16 h-16 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20"><Sparkles className="w-8 h-8" /></div>
               <h1 className="text-2xl font-black text-white">Designer Portal</h1>
               <p className="text-slate-400 text-sm mt-2">Upload & monetize your templates</p>
             </div>
@@ -824,19 +825,19 @@ function DesignerPortal() {
       <header className="bg-slate-900/80 backdrop-blur border-b border-slate-700 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🎨</span>
+            <div className="bg-indigo-500/20 p-2 rounded-lg border border-indigo-500/30"><Palette className="w-6 h-6 text-indigo-400" /></div>
             <div>
-              <h1 className="font-black text-white">Designer Portal</h1>
-              <p className="text-xs text-slate-400">{designer?.name}</p>
+              <h1 className="font-bold text-white text-lg">Designer Portal</h1>
+              <p className="text-xs text-slate-400 font-medium">{designer?.name}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <NotificationBell userId={currentUser?.uid} />
             <button
               onClick={() => navigate('/dashboard')}
-              className="bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 font-bold px-4 py-2 rounded-lg transition mr-2"
+              className="bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white font-medium px-4 py-2 rounded-lg transition mr-2 flex items-center gap-2 text-sm border border-slate-700"
             >
-              ← Client Dashboard
+              <ArrowLeft className="w-4 h-4" /> Client Dashboard
             </button>
             <button
               onClick={handleLogout}
@@ -878,34 +879,37 @@ function DesignerPortal() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b border-slate-700 overflow-x-auto pb-2">
+        <div className="flex gap-2 mb-8 border-b border-slate-700/50 overflow-x-auto pb-4 no-scrollbar">
           {[
-            { id: 'templates', label: '📋 My Templates', icon: '📋' },
-            { id: 'portfolio', label: '🖼️ Portfolio Builder', icon: '🖼️' },
-            { id: 'inbox', label: `📥 Work Inbox ${workRequests.filter(r => r.status === 'pending').length > 0 ? `(${workRequests.filter(r => r.status === 'pending').length})` : ''}`, icon: '📥' },
-            { id: 'upload', label: '⬆️ Upload New', icon: '⬆️' },
-            { id: 'profile', label: '👤 Profile', icon: '👤' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 font-bold transition ${activeTab === tab.id
-                ? 'text-indigo-400 border-b-2 border-indigo-400'
-                : 'text-slate-400 hover:text-slate-300'
-                }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+            { id: 'templates', label: 'My Templates', icon: LayoutTemplate },
+            { id: 'portfolio', label: 'Portfolio Builder', icon: ImageIcon },
+            { id: 'inbox', label: `Work Inbox ${workRequests.filter(r => r.status === 'pending').length > 0 ? `(${workRequests.filter(r => r.status === 'pending').length})` : ''}`, icon: Inbox },
+            { id: 'upload', label: 'Upload New', icon: Upload },
+            { id: 'profile', label: 'Profile', icon: User }
+          ].map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-5 py-2.5 font-medium transition rounded-lg flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === tab.id
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                  }`}
+              >
+                <Icon className="w-4 h-4" /> {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Work Inbox Tab */}
         {activeTab === 'inbox' && (
           <div>
-            <h2 className="text-2xl font-black text-white mb-6">Client Design Requests</h2>
+            <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Client Design Requests</h2>
             {workRequests.length === 0 ? (
-              <div className="bg-slate-800 rounded-2xl p-12 text-center border border-slate-700">
-                <span className="text-5xl mb-4 block">📭</span>
+              <div className="bg-slate-800 rounded-2xl p-16 text-center border border-slate-700 shadow-sm">
+                <div className="w-24 h-24 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-700"><Inbox className="w-12 h-12 text-slate-500" /></div>
                 <p className="text-slate-400 font-medium mb-4">Your inbox is empty. No work requests yet.</p>
               </div>
             ) : (
@@ -979,16 +983,16 @@ function DesignerPortal() {
         {/* Templates Tab */}
         {activeTab === 'templates' && (
           <div>
-            <h2 className="text-2xl font-black text-white mb-6">Your Templates</h2>
+            <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Your Templates</h2>
             {isFetching ? (
               <p className="text-slate-400 text-center py-12">Loading templates...</p>
             ) : templates.length === 0 ? (
-              <div className="bg-slate-800 rounded-2xl p-12 text-center border border-slate-700">
-                <span className="text-5xl mb-4 block">📦</span>
-                <p className="text-slate-400 font-medium mb-4">No templates yet. Start by uploading one!</p>
+              <div className="bg-slate-800 rounded-2xl p-16 text-center border border-slate-700 shadow-sm">
+                <div className="w-24 h-24 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-700"><LayoutTemplate className="w-12 h-12 text-slate-500" /></div>
+                <p className="text-slate-400 font-medium mb-6">No templates yet. Start by uploading one!</p>
                 <button
                   onClick={() => setActiveTab('upload')}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl transition"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-lg transition shadow-sm flex items-center justify-center gap-2 mx-auto"
                 >
                   Upload Template
                 </button>
@@ -1007,7 +1011,7 @@ function DesignerPortal() {
                       <h3 className="font-bold text-white mb-2 truncate">{template.title}</h3>
                       <p className="text-xs text-slate-400 mb-4 line-clamp-2">{template.description}</p>
                       <div className="flex items-center justify-between text-xs text-slate-500 mb-4">
-                        <span>📊 {template.timesPurchased || 0} Sales</span>
+                        <span className="flex items-center gap-1"><Activity className="w-3.5 h-3.5" /> {template.timesPurchased || 0} Sales</span>
                         <span className="text-emerald-400 font-bold">₹{((template.price * (template.commissionPercent || 30)) / 100 * (template.timesPurchased || 0)).toLocaleString()}</span>
                       </div>
                       <button
@@ -1027,24 +1031,24 @@ function DesignerPortal() {
         {/* Upload Tab */}
         {activeTab === 'upload' && (
           <div>
-            <h2 className="text-2xl font-black text-white mb-6">Upload New Template</h2>
-            <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700">
+            <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Upload New Template</h2>
+            <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700 shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left: Image Upload */}
                 <div>
                   <label className="block text-sm font-bold text-slate-300 mb-3">Background Image</label>
                   <div
                     onClick={() => templateImageRef.current?.click()}
-                    className="border-2 border-dashed border-slate-600 rounded-2xl p-8 text-center cursor-pointer hover:border-indigo-500 transition"
+                    className="border-2 border-dashed border-slate-600 rounded-2xl p-8 text-center cursor-pointer hover:border-indigo-500 transition hover:bg-slate-800/50"
                   >
                     {templateForm.backgroundImage ? (
                       <div>
-                        <img src={templateForm.backgroundImage} alt="preview" className="w-full h-40 object-cover rounded-xl mb-3" />
+                        <img src={templateForm.backgroundImage} alt="preview" className="w-full h-40 object-cover rounded-xl mb-3 shadow-md" />
                         <p className="text-xs text-slate-400">Click to change image</p>
                       </div>
                     ) : (
                       <div>
-                        <span className="text-4xl block mb-3">📸</span>
+                        <Camera className="w-10 h-10 text-slate-500 mx-auto mb-3" />
                         <p className="text-slate-400 font-medium">Click to upload image</p>
                         <p className="text-xs text-slate-500 mt-2">Max 2MB, PNG/JPG</p>
                       </div>
@@ -1137,9 +1141,9 @@ function DesignerPortal() {
               <button
                 onClick={() => setIsEditingTemplate(true)}
                 disabled={uploading || !templateForm.title || !templateForm.backgroundImage}
-                className="w-full mt-8 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl transition disabled:opacity-50"
+                className="w-full mt-8 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {uploading ? '⬆️ Processing...' : '✏️ Configure Elements (Pro Studio)'}
+                {uploading ? <><Upload className="w-4 h-4 animate-bounce" /> Processing...</> : <><Palette className="w-4 h-4" /> Configure Elements (Pro Studio)</>}
               </button>
             </div>
           </div>
@@ -1172,10 +1176,10 @@ function DesignerPortal() {
             </div>
 
             <div className="lg:col-span-2">
-              <h2 className="text-2xl font-black text-white mb-6">Your Live Portfolio</h2>
+              <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Your Live Portfolio</h2>
               {portfolioItems.length === 0 ? (
-                <div className="bg-slate-800 rounded-2xl p-12 text-center border border-slate-700">
-                  <span className="text-5xl mb-4 block">🖼️</span>
+                <div className="bg-slate-800 rounded-2xl p-16 text-center border border-slate-700 shadow-sm">
+                  <div className="w-24 h-24 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-700"><ImageIcon className="w-12 h-12 text-slate-500" /></div>
                   <p className="text-slate-400 font-medium">Your portfolio is empty. Upload your best work to attract clients!</p>
                 </div>
               ) : (
@@ -1204,14 +1208,14 @@ function DesignerPortal() {
         {/* Profile Tab */}
         {activeTab === 'profile' && (
           <div>
-            <h2 className="text-2xl font-black text-white mb-6">Designer Profile</h2>
-            <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700 max-w-2xl">
+            <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">Designer Profile</h2>
+            <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700 max-w-2xl shadow-sm">
               <form onSubmit={handleUpdateDesignerProfile} className="space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-slate-300 mb-2">Name</label>
                   <p className="text-white font-bold text-lg flex items-center gap-2">
                     {designer?.name}
-                    <span className="text-xs bg-yellow-900/30 text-yellow-500 px-2 py-0.5 rounded font-bold border border-yellow-700/50">⭐ {designer?.rating ? designer.rating.toFixed(1) : "5.0"}</span>
+                    <span className="text-xs bg-yellow-900/30 text-yellow-500 px-2 py-0.5 rounded font-bold border border-yellow-700/50 flex items-center"><Star className="w-3 h-3 text-yellow-500 fill-yellow-500 mr-1" /> {designer?.rating ? designer.rating.toFixed(1) : "5.0"}</span>
                   </p>
                 </div>
                 <div>

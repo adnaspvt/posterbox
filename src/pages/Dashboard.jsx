@@ -6,6 +6,7 @@ import { auth, db, IMGBB_API_KEY } from '../config/firebase'; // 🚀 ImgBB Key 
 import { Rnd } from 'react-rnd';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
+import { LayoutDashboard, LineChart, Image as ImageIcon, Layers, PaintBucket, Users, Sparkles, Inbox, Settings, LogOut, ChevronRight, Menu, X, Plus, Eye, Download, Zap, Link, Rocket, Trash2, Link2, Search, ExternalLink, MessageCircle, Star, ImageOff, Palette, Send, CheckCircle2, Building } from 'lucide-react';
 
 import BrandKitEditor from '../components/BrandKitEditor';
 import NotificationBell from '../components/NotificationBell';
@@ -406,23 +407,30 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex font-sans text-slate-800 pb-20 md:pb-0">
 
-      <aside className="w-72 bg-white border-r border-slate-200 hidden md:flex md:flex-col shrink-0 z-40 relative shadow-sm">
-        <div className="p-8 border-b border-slate-100 flex items-center gap-3"><div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-600/30"><span className="text-white font-black text-xl leading-none">C</span></div><div className="text-2xl font-black text-slate-800 tracking-tight cursor-pointer" onClick={() => navigate('/')}>Camp<span className="text-indigo-600">Send</span></div></div>
-        <nav className="flex-1 p-6 flex flex-col gap-2 overflow-y-auto">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2">Main Menu</p>
-          <button onClick={() => setActiveView('overview')} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200 ${activeView === 'overview' ? 'bg-indigo-50 text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}><span className="text-xl">📊</span> My Campaigns</button>
-          <button onClick={() => setActiveView('analytics')} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200 ${activeView === 'analytics' ? 'bg-indigo-50 text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}><span className="text-xl">📈</span> Analytics</button>
-          <button onClick={() => setActiveView('templates')} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200 ${activeView === 'templates' ? 'bg-indigo-50 text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}><span className="text-xl">🖼️</span> Master Templates</button>
-          <button onClick={() => setActiveView('library')} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200 ${activeView === 'library' ? 'bg-indigo-50 text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}><span className="text-xl">🎨</span> Template Library</button>
-          <div className="h-px bg-slate-100 my-4"></div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2">Workspace</p>
-          <button onClick={() => setActiveView('branding')} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200 ${activeView === 'branding' ? 'bg-rose-50 text-rose-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}><span className="text-xl">🎨</span> Brand Kit</button>
-          <button onClick={() => setActiveView('team')} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200 ${activeView === 'team' ? 'bg-cyan-50 text-cyan-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}><span className="text-xl">👥</span> Team</button>
-          <div className="h-px bg-slate-100 my-4"></div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2">Services & Support</p>
-          <button onClick={() => setActiveView('designer')} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200 ${activeView === 'designer' ? 'bg-purple-50 text-purple-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}><span className="text-xl">✨</span> Hire a Designer</button>
-          <button onClick={() => setActiveView('requests')} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200 ${activeView === 'requests' ? 'bg-amber-50 text-amber-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}><span className="text-xl">📥</span> My Requests</button>
-          <button onClick={() => setActiveView('settings')} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200 ${activeView === 'settings' ? 'bg-slate-100 text-slate-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}><span className="text-xl">⚙️</span> Settings</button>
+      <aside className="w-72 bg-white border-r border-slate-200 hidden md:flex md:flex-col shrink-0 z-40 relative">
+        <div className="p-8 border-b border-slate-100 flex items-center gap-3">
+          <div className="w-8 h-8 bg-slate-900 rounded-md flex items-center justify-center shadow-xs">
+            <span className="text-white font-black text-xl leading-none">C</span>
+          </div>
+          <div className="text-2xl font-black text-slate-900 tracking-tight cursor-pointer" onClick={() => navigate('/')}>
+            Camp<span className="text-slate-400">Send</span>
+          </div>
+        </div>
+        <nav className="flex-1 p-6 flex flex-col gap-1.5 overflow-y-auto">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-3 mt-2">Main Menu</p>
+          <button onClick={() => setActiveView('overview')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'overview' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><LayoutDashboard className="w-5 h-5" /> My Campaigns</button>
+          <button onClick={() => setActiveView('analytics')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'analytics' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><LineChart className="w-5 h-5" /> Analytics</button>
+          <button onClick={() => setActiveView('templates')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'templates' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><ImageIcon className="w-5 h-5" /> Master Templates</button>
+          <button onClick={() => setActiveView('library')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'library' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><Layers className="w-5 h-5" /> Template Library</button>
+          
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-3 mt-6">Workspace</p>
+          <button onClick={() => setActiveView('branding')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'branding' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><PaintBucket className="w-5 h-5" /> Brand Kit</button>
+          <button onClick={() => setActiveView('team')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'team' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><Users className="w-5 h-5" /> Team</button>
+          
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-3 mt-6">Services & Support</p>
+          <button onClick={() => setActiveView('designer')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'designer' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><Sparkles className="w-5 h-5" /> Hire a Designer</button>
+          <button onClick={() => setActiveView('requests')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'requests' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><Inbox className="w-5 h-5" /> My Requests</button>
+          <button onClick={() => setActiveView('settings')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'settings' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><Settings className="w-5 h-5" /> Settings</button>
         </nav>
         <div className="p-6 border-t border-slate-100 bg-slate-50/50">
           <div className="flex flex-col gap-2 mb-6">
@@ -430,32 +438,43 @@ function Dashboard() {
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Account</span>
               <NotificationBell userId={user?.uid} />
             </div>
-            <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-sm"><div className="w-10 h-10 bg-linear-to-tr from-indigo-600 to-purple-600 text-white rounded-xl flex items-center justify-center font-black text-lg shadow-inner">{userProfile?.firmName ? userProfile.firmName.charAt(0).toUpperCase() : "U"}</div><div className="overflow-hidden flex-1"><p className="text-sm font-bold text-slate-800 truncate">{userProfile?.firmName || "My Organization"}</p><p className="text-xs font-medium text-slate-400 truncate">{user?.email}</p></div></div>
+            <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+              <div className="w-10 h-10 bg-slate-100 text-slate-600 rounded-md flex items-center justify-center font-bold text-lg">
+                {userProfile?.firmName ? userProfile.firmName.charAt(0).toUpperCase() : "U"}
+              </div>
+              <div className="overflow-hidden flex-1">
+                <p className="text-sm font-medium text-slate-900 truncate">{userProfile?.firmName || "My Organization"}</p>
+                <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+              </div>
+            </div>
           </div>
-          <button onClick={() => navigate('/designer')} className="w-full py-3 mb-2 text-indigo-600 bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 rounded-xl font-bold transition-all duration-200 shadow-sm flex items-center justify-center gap-2">🎨 Designer Portal</button>
-          <button onClick={handleLogout} className="w-full py-3 text-slate-500 bg-white border border-slate-200 hover:border-red-200 hover:text-red-500 hover:bg-red-50 rounded-xl font-bold transition-all duration-200 shadow-sm">Sign Out</button>
+          <button onClick={() => navigate('/designer')} className="w-full py-2.5 mb-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm"><Sparkles className="w-4 h-4" /> Designer Portal</button>
+          <button onClick={handleLogout} className="w-full py-2.5 text-slate-500 bg-white border border-slate-200 hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm"><LogOut className="w-4 h-4" /> Sign Out</button>
         </div>
       </aside>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 z-50 flex justify-around items-center px-2 py-2 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
-        <button onClick={() => setActiveView('overview')} className={`flex flex-col items-center p-2 rounded-xl min-w-17.5 ${activeView === 'overview' ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400'}`}><span className="text-xl mb-1">📊</span><span className="text-[10px] font-bold">Campaigns</span></button>
-        <button onClick={() => setActiveView('analytics')} className={`flex flex-col items-center p-2 rounded-xl min-w-17.5 ${activeView === 'analytics' ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400'}`}><span className="text-xl mb-1">📈</span><span className="text-[10px] font-bold">Analytics</span></button>
-        <button onClick={() => setActiveView('templates')} className={`flex flex-col items-center p-2 rounded-xl min-w-17.5 ${activeView === 'templates' ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400'}`}><span className="text-xl mb-1">🖼️</span><span className="text-[10px] font-bold">Templates</span></button>
-        <button onClick={() => setActiveView('branding')} className={`flex flex-col items-center p-2 rounded-xl min-w-17.5 ${activeView === 'branding' ? 'text-rose-600 bg-rose-50' : 'text-slate-400'}`}><span className="text-xl mb-1">🎨</span><span className="text-[10px] font-bold">Branding</span></button>
-        <button onClick={() => setActiveView('team')} className={`flex flex-col items-center p-2 rounded-xl min-w-17.5 ${activeView === 'team' ? 'text-cyan-600 bg-cyan-50' : 'text-slate-400'}`}><span className="text-xl mb-1">👥</span><span className="text-[10px] font-bold">Team</span></button>
-        <button onClick={() => setActiveView('designer')} className={`flex flex-col items-center p-2 rounded-xl min-w-17.5 ${activeView === 'designer' ? 'text-purple-600 bg-purple-50' : 'text-slate-400'}`}><span className="text-xl mb-1">✨</span><span className="text-[10px] font-bold">Designer</span></button>
-        <button onClick={() => setActiveView('requests')} className={`flex flex-col items-center p-2 rounded-xl min-w-17.5 ${activeView === 'requests' ? 'text-amber-600 bg-amber-50' : 'text-slate-400'}`}><span className="text-xl mb-1">📥</span><span className="text-[10px] font-bold">Requests</span></button>
-        <button onClick={() => setActiveView('settings')} className={`flex flex-col items-center p-2 rounded-xl min-w-17.5 ${activeView === 'settings' ? 'text-slate-800 bg-slate-100' : 'text-slate-400'}`}><span className="text-xl mb-1">⚙️</span><span className="text-[10px] font-bold">Settings</span></button>
+      {/* Mobile Nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 z-50 flex overflow-x-auto items-center px-2 py-2 pb-safe shadow-sm no-scrollbar">
+        <button onClick={() => setActiveView('overview')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'overview' ? 'text-slate-900' : 'text-slate-400'}`}><LayoutDashboard className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Campaigns</span></button>
+        <button onClick={() => setActiveView('analytics')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'analytics' ? 'text-slate-900' : 'text-slate-400'}`}><LineChart className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Analytics</span></button>
+        <button onClick={() => setActiveView('templates')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'templates' ? 'text-slate-900' : 'text-slate-400'}`}><ImageIcon className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Templates</span></button>
+        <button onClick={() => setActiveView('branding')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'branding' ? 'text-slate-900' : 'text-slate-400'}`}><PaintBucket className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Branding</span></button>
+        <button onClick={() => setActiveView('team')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'team' ? 'text-slate-900' : 'text-slate-400'}`}><Users className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Team</span></button>
+        <button onClick={() => setActiveView('designer')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'designer' ? 'text-slate-900' : 'text-slate-400'}`}><Sparkles className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Designer</span></button>
+        <button onClick={() => setActiveView('requests')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'requests' ? 'text-slate-900' : 'text-slate-400'}`}><Inbox className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Requests</span></button>
+        <button onClick={() => setActiveView('settings')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'settings' ? 'text-slate-900' : 'text-slate-400'}`}><Settings className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Settings</span></button>
       </nav>
 
-      <main className="flex-1 flex flex-col h-full overflow-y-auto relative scroll-smooth">
+      <main className="flex-1 flex flex-col h-full overflow-y-auto relative scroll-smooth bg-slate-50/50">
         {activeView !== 'studio' && (
-          <header className="md:hidden bg-white/80 backdrop-blur-md border-b border-slate-200 py-4 px-6 flex justify-between items-center sticky top-0 z-40">
-            <div className="flex items-center gap-2"><div className="w-6 h-6 bg-indigo-600 rounded-md flex items-center justify-center"><span className="text-white font-black text-xs">C</span></div><div className="text-xl font-black text-slate-800 tracking-tight">Camp<span className="text-indigo-600">Send</span></div></div>
+          <header className="md:hidden bg-white/80 backdrop-blur-md border-b border-slate-200 py-3 px-5 flex justify-between items-center sticky top-0 z-40">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-slate-900 rounded flex items-center justify-center"><span className="text-white font-bold text-xs">C</span></div>
+              <div className="text-lg font-bold text-slate-900 tracking-tight">Camp<span className="text-slate-400">Send</span></div>
+            </div>
             <div className="flex items-center gap-3">
               <NotificationBell userId={user?.uid} />
-              <button onClick={() => navigate('/designer')} className="text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm flex items-center gap-1"><span>🎨</span> Portal</button>
-              <div className="w-8 h-8 bg-linear-to-tr from-indigo-600 to-purple-600 text-white rounded-full flex items-center justify-center font-black text-sm shadow-md">{userProfile?.firmName ? userProfile.firmName.charAt(0).toUpperCase() : "U"}</div>
+              <button onClick={() => navigate('/designer')} className="text-[10px] font-medium uppercase tracking-wider bg-slate-100 text-slate-600 px-3 py-1.5 rounded-md border border-slate-200 shadow-sm flex items-center gap-1"><Sparkles className="w-3 h-3" /> Portal</button>
             </div>
           </header>
         )}
@@ -465,28 +484,28 @@ function Dashboard() {
           {activeView === 'overview' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col md:flex-row justify-between md:items-end mb-8 gap-4">
-                <div><h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Campaign Analytics</h1><p className="text-slate-500 mt-2 font-medium">Manage and track your interactive public links.</p></div>
-                <button onClick={handleCreateNewCampaign} className="w-full md:w-auto bg-linear-to-r from-indigo-600 to-indigo-500 text-white font-bold py-3.5 px-6 rounded-xl shadow-[0_8px_20px_-4px_rgba(79,70,229,0.4)] hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-2"><span className="text-xl leading-none">+</span> Blank Campaign</button>
+                <div><h1 className="text-3xl font-bold text-slate-900 tracking-tight">Campaign Analytics</h1><p className="text-slate-500 mt-1 font-medium">Manage and track your interactive public links.</p></div>
+                <button onClick={handleCreateNewCampaign} className="w-full md:w-auto bg-slate-900 text-white font-medium py-2.5 px-5 rounded-lg shadow-sm hover:bg-slate-800 transition-all flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Blank Campaign</button>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow"><div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl mb-3">👁️</div><p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Reach</p><p className="text-3xl md:text-4xl font-black text-slate-800">{totalViews}</p></div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow"><div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl mb-3">📥</div><p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Downloads</p><p className="text-3xl md:text-4xl font-black text-slate-800">{totalPosters}</p></div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow"><div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl mb-3">⚡</div><p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Conversion</p><p className="text-3xl md:text-4xl font-black text-slate-800">{totalViews > 0 ? ((totalPosters / totalViews) * 100).toFixed(1) : "0"}%</p></div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow"><div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl mb-3">🎯</div><p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Active Links</p><p className="text-3xl md:text-4xl font-black text-slate-800">{campaigns.length}</p></div>
+                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow"><div className="w-8 h-8 bg-slate-100 text-slate-700 rounded-lg flex items-center justify-center mb-3"><Eye className="w-4 h-4" /></div><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total Reach</p><p className="text-3xl font-bold text-slate-900">{totalViews}</p></div>
+                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow"><div className="w-8 h-8 bg-slate-100 text-slate-700 rounded-lg flex items-center justify-center mb-3"><Download className="w-4 h-4" /></div><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Downloads</p><p className="text-3xl font-bold text-slate-900">{totalPosters}</p></div>
+                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow"><div className="w-8 h-8 bg-slate-100 text-slate-700 rounded-lg flex items-center justify-center mb-3"><Zap className="w-4 h-4" /></div><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Conversion</p><p className="text-3xl font-bold text-slate-900">{totalViews > 0 ? ((totalPosters / totalViews) * 100).toFixed(1) : "0"}%</p></div>
+                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow"><div className="w-8 h-8 bg-slate-100 text-slate-700 rounded-lg flex items-center justify-center mb-3"><Link className="w-4 h-4" /></div><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Active Links</p><p className="text-3xl font-bold text-slate-900">{campaigns.length}</p></div>
               </div>
-              {campaigns.length === 0 && !isFetching && (<div className="bg-white border border-dashed border-slate-300 rounded-3xl p-12 flex flex-col items-center justify-center text-center shadow-sm"><div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-4xl mb-4">🚀</div><h3 className="text-xl font-bold text-slate-800 mb-2">No active campaigns</h3><p className="text-slate-500 max-w-md">Create your first campaign to start engaging your audience and collecting analytics.</p></div>)}
+              {campaigns.length === 0 && !isFetching && (<div className="bg-white border border-dashed border-slate-300 rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm"><div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mb-4"><Rocket className="w-8 h-8" /></div><h3 className="text-lg font-bold text-slate-900 mb-2">No active campaigns</h3><p className="text-sm text-slate-500 max-w-sm">Create your first campaign to start engaging your audience and collecting analytics.</p></div>)}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {campaigns.map(camp => (
-                  <div key={camp.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col sm:flex-row gap-5 hover:shadow-lg transition-all duration-300 group">
-                    <div className="w-full sm:w-32 h-48 sm:h-32 bg-slate-100 rounded-xl relative overflow-hidden shrink-0"><div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style={{ backgroundImage: `url(${camp.backgroundImage})` }}></div><div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div></div>
+                  <div key={camp.id} className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-5 hover:shadow-md transition-all duration-300 group">
+                    <div className="w-full sm:w-32 h-48 sm:h-32 bg-slate-100 rounded-lg relative overflow-hidden shrink-0"><div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style={{ backgroundImage: `url(${camp.backgroundImage})` }}></div><div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div></div>
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-bold text-lg text-slate-800 truncate pr-2">{camp.title}</h3>
-                          {camp.isPublic && <span className="shrink-0 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] font-black uppercase px-2 py-0.5 rounded">Public</span>}
+                          <h3 className="font-bold text-base text-slate-900 truncate pr-2">{camp.title}</h3>
+                          {camp.isPublic && <span className="shrink-0 bg-slate-100 text-slate-600 border border-slate-200 text-[9px] font-bold uppercase px-2 py-0.5 rounded">Public</span>}
                         </div>
                         <div className="flex justify-between items-center">
-                          <div className="flex gap-4"><div className="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><p className="text-[9px] font-black text-slate-400 uppercase">Reach</p><p className="font-bold text-slate-700 text-sm">{camp.views || 0}</p></div><div className="bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100/50"><p className="text-[9px] font-black text-indigo-400 uppercase">Downs</p><p className="font-bold text-indigo-700 text-sm">{camp.postersGenerated || 0}</p></div></div>
+                          <div className="flex gap-4"><div className="px-1"><p className="text-[10px] font-bold text-slate-400 uppercase">Reach</p><p className="font-semibold text-slate-800 text-sm">{camp.views || 0}</p></div><div className="px-1 border-l border-slate-200 pl-4"><p className="text-[10px] font-bold text-slate-400 uppercase">Downs</p><p className="font-semibold text-slate-800 text-sm">{camp.postersGenerated || 0}</p></div></div>
 
                           <div className="flex flex-col items-center gap-1 group/qr cursor-pointer relative" onClick={(e) => {
                             // Quick hack to download QR code SVG
@@ -518,7 +537,7 @@ function Dashboard() {
                           </div>
                         </div>
                       </div>
-                      <div className="mt-4 flex gap-2"><button onClick={() => handleEditCampaign(camp)} className="flex-1 bg-white border border-slate-200 text-slate-600 font-bold py-2 rounded-lg text-sm hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm">Edit</button><button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/generator?id=${camp.id}`); toast.success("Share Link Copied!"); }} className="flex-1 bg-indigo-50 text-indigo-600 font-bold py-2 rounded-lg text-sm hover:bg-indigo-100 transition-colors shadow-sm">Copy Link</button><button onClick={() => handleDeleteCampaign(camp.id)} className="w-10 flex items-center justify-center bg-white border border-red-100 text-red-400 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors shadow-sm">🗑️</button></div>
+                      <div className="mt-4 flex gap-2"><button onClick={() => handleEditCampaign(camp)} className="flex-1 bg-white border border-slate-200 text-slate-700 font-medium py-1.5 rounded-md text-sm hover:bg-slate-50 transition-colors shadow-xs">Edit</button><button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/generator?id=${camp.id}`); toast.success("Share Link Copied!"); }} className="flex-1 bg-slate-900 text-white font-medium py-1.5 rounded-md text-sm hover:bg-slate-800 transition-colors shadow-xs flex items-center justify-center gap-1.5"><Link2 className="w-3.5 h-3.5" /> Share</button><button onClick={() => handleDeleteCampaign(camp.id)} className="w-9 flex items-center justify-center bg-white border border-slate-200 text-red-500 rounded-md hover:bg-red-50 hover:border-red-100 transition-colors shadow-xs"><Trash2 className="w-4 h-4" /></button></div>
                     </div>
                   </div>
                 ))}
@@ -528,14 +547,14 @@ function Dashboard() {
 
           {activeView === 'templates' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="mb-8 border-b border-slate-200 pb-6"><h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Master Templates</h1><p className="text-slate-500 mt-2 font-medium">Clone a professional layout into your Pro Studio to launch your campaign instantly.</p></div>
-              {platformTemplates.length === 0 ? (<div className="bg-white border border-dashed border-slate-300 rounded-3xl p-12 text-center shadow-sm"><div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">🖼️</div><p className="text-slate-500 font-medium">No templates available yet. Check back soon!</p></div>) : (
+              <div className="mb-8 border-b border-slate-200 pb-6"><h1 className="text-3xl font-bold text-slate-900 tracking-tight">Master Templates</h1><p className="text-slate-500 mt-1 font-medium">Clone a professional layout into your Pro Studio to launch your campaign instantly.</p></div>
+              {platformTemplates.length === 0 ? (<div className="bg-white border border-dashed border-slate-300 rounded-xl p-12 text-center shadow-sm"><div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4"><ImageOff className="w-8 h-8" /></div><p className="text-sm text-slate-500 font-medium">No templates available yet. Check back soon!</p></div>) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                   {platformTemplates.map(template => (
-                    <div key={template.id} className="bg-white border border-slate-200 rounded-2xl p-2.5 shadow-sm hover:shadow-xl transition-all group flex flex-col relative">
+                    <div key={template.id} className="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm hover:shadow-md transition-all group flex flex-col relative">
                       <div className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur px-2 py-1 rounded-md shadow-sm flex items-center gap-1">
-                        <span className="text-[10px] text-yellow-500">⭐</span>
-                        <span className="text-xs font-bold text-slate-800">{template.rating ? template.rating.toFixed(1) : "5.0"}</span>
+                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                        <span className="text-xs font-bold text-slate-900">{template.rating ? template.rating.toFixed(1) : "5.0"}</span>
                       </div>
                       <div onClick={() => handleUseMasterTemplate(template)} className="aspect-3/4 bg-slate-100 rounded-xl mb-3 overflow-hidden relative cursor-pointer">
                         <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url(${template.backgroundImage})` }}></div>
@@ -557,27 +576,27 @@ function Dashboard() {
           {activeView === 'designer' && (
             <div className="max-w-3xl mx-auto animate-in slide-in-from-bottom-4 duration-500 w-full">
               <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl text-3xl mb-4 shadow-sm border border-purple-200">✨</div>
-                <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Hire a Pro Designer</h1>
-                <p className="text-slate-500 font-medium mt-3 px-4">Select a designer from our agency roster or let us assign the best fit for your project.</p>
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-100 text-slate-900 rounded-xl mb-4 shadow-sm border border-slate-200"><Palette className="w-8 h-8" /></div>
+                <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Hire a Pro Designer</h1>
+                <p className="text-slate-500 font-medium mt-2 px-4 text-sm">Select a designer from our agency roster or let us assign the best fit for your project.</p>
               </div>
 
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 p-6 md:p-10 relative overflow-hidden mb-8">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 relative overflow-hidden mb-8">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-purple-400 rounded-full blur-[80px] opacity-10 pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
 
                 <form onSubmit={handleDesignerSubmit} className="relative z-10 flex flex-col gap-6">
 
                   <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">1. Select Your Designer</label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 block">1. Select Your Designer</label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      <div onClick={() => setSelectedDesigner(null)} className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${!selectedDesigner ? 'border-purple-500 bg-purple-50 shadow-md' : 'border-slate-200 bg-slate-50 hover:border-purple-200'}`}>
-                        <div className="text-2xl mb-1">⚡</div>
-                        <h3 className="font-bold text-slate-800 text-sm">Any Available</h3>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mt-1">Fastest Delivery</p>
+                      <div onClick={() => setSelectedDesigner(null)} className={`p-4 rounded-xl border cursor-pointer transition-all ${!selectedDesigner ? 'border-slate-900 bg-slate-50 shadow-sm ring-1 ring-slate-900' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+                        <Zap className={`w-6 h-6 mb-2 ${!selectedDesigner ? 'text-slate-900' : 'text-slate-400'}`} />
+                        <h3 className={`font-bold text-sm ${!selectedDesigner ? 'text-slate-900' : 'text-slate-700'}`}>Any Available</h3>
+                        <p className="text-[9px] text-slate-500 uppercase tracking-wider mt-1">Fastest Delivery</p>
                       </div>
 
                       {designers.map(d => (
-                        <div key={d.id} onClick={() => setSelectedDesigner(d)} className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedDesigner?.id === d.id ? 'border-purple-500 bg-purple-50 shadow-md' : 'border-slate-200 bg-white hover:border-purple-200'}`}>
+                        <div key={d.id} onClick={() => setSelectedDesigner(d)} className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedDesigner?.id === d.id ? 'border-slate-900 bg-slate-50 shadow-sm ring-1 ring-slate-900' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
                           <div className="flex justify-between items-start mb-2">
                             <div className="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-black text-sm">{d.name.charAt(0)}</div>
                             <div className="flex gap-1 flex-wrap justify-end">
@@ -596,10 +615,10 @@ function Dashboard() {
                               <a href={`https://wa.me/${d.whatsapp.replace(/[^0-9]/g, '')}?text=Hi ${d.name}, I found your profile on CampSend!`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-[10px] bg-[#25D366]/10 text-[#25D366] px-2 py-1 rounded font-bold transition-colors flex items-center gap-1"><svg className="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg> Chat</a>
                             )}
                           </div>
-                          <div className="flex justify-between items-center mt-1">
-                            <p className="text-[10px] font-bold text-purple-500 uppercase tracking-wider truncate">{d.specialty}</p>
+                          <div className="flex justify-between items-center mb-1 mt-2">
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate">{d.specialty}</p>
                             <div className="flex items-center gap-1 group/rate">
-                              <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><span className="text-yellow-500">⭐</span> {d.rating ? d.rating.toFixed(1) : "5.0"}</p>
+                              <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {d.rating ? d.rating.toFixed(1) : "5.0"}</p>
                               <button onClick={(e) => { e.stopPropagation(); handleRateDesigner(d, 5); }} className="text-slate-300 hover:text-yellow-400 transition-colors opacity-0 group-hover/rate:opacity-100" title="Give 5 Stars">★</button>
                             </div>
                           </div>
@@ -610,55 +629,55 @@ function Dashboard() {
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">2. Project Subject</label>
-                    <input type="text" value={designSubject} onChange={(e) => setDesignSubject(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:bg-white focus:border-purple-400 focus:ring-4 focus:ring-purple-500/10 transition-all" placeholder="e.g. Custom Marathon Flyer" />
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">2. Project Subject</label>
+                    <input type="text" value={designSubject} onChange={(e) => setDesignSubject(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg font-medium outline-none focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all" placeholder="e.g. Custom Marathon Flyer" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">3. Details & Requirements</label>
-                    <textarea value={designDetails} onChange={(e) => setDesignDetails(e.target.value)} rows="4" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:bg-white focus:border-purple-400 focus:ring-4 focus:ring-purple-500/10 transition-all resize-none" placeholder="Describe your vision, brand colors, text requirements..."></textarea>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">3. Details & Requirements</label>
+                    <textarea value={designDetails} onChange={(e) => setDesignDetails(e.target.value)} rows="4" className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg font-medium outline-none focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all resize-none" placeholder="Describe your vision, brand colors, text requirements..."></textarea>
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">4. Upload Reference / Assets (Optional)</label>
-                    <input type="file" accept="image/*" onChange={(e) => setDesignMediaFile(e.target.files[0])} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:bg-white transition-all text-sm" />
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">4. Upload Reference / Assets (Optional)</label>
+                    <input type="file" accept="image/*" onChange={(e) => setDesignMediaFile(e.target.files[0])} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg font-medium outline-none focus:bg-white transition-all text-sm" />
                   </div>
 
-                  <button type="submit" disabled={isSendingRequest} className="w-full py-4 bg-slate-900 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50 mt-2">
+                  <button type="submit" disabled={isSendingRequest} className="w-full py-3 bg-slate-900 text-white font-medium text-base rounded-lg shadow-sm hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50 mt-2">
                     {isSendingRequest ? "Sending Request..." : "Submit Design Request"}
                   </button>
                 </form>
               </div>
 
-              <div className="bg-[#25D366]/5 border border-[#25D366]/20 rounded-3xl p-6 md:p-8 text-center flex flex-col items-center">
-                <p className="text-sm text-slate-600 font-bold mb-4">Need immediate assistance or prefer to chat?</p>
-                <button onClick={handleDirectWhatsApp} type="button" className="w-full md:w-auto px-8 py-4 bg-[#25D366] text-white font-bold text-lg rounded-xl shadow-lg shadow-[#25D366]/30 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-3"><svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>Chat with us on WhatsApp</button>
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 md:p-8 text-center flex flex-col items-center shadow-sm">
+                <p className="text-sm text-slate-600 font-medium mb-4">Need immediate assistance or prefer to chat?</p>
+                <button onClick={handleDirectWhatsApp} type="button" className="w-full md:w-auto px-6 py-3 bg-[#25D366] text-white font-medium text-sm rounded-lg shadow-sm hover:bg-[#20b858] transition-all flex items-center justify-center gap-2"><MessageCircle className="w-5 h-5" />Chat with us on WhatsApp</button>
               </div>
             </div>
           )}
 
           {activeView === 'requests' && (
             <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom-4 duration-500 w-full p-4 md:p-8">
-              <h1 className="text-3xl font-black text-slate-900 mb-8">My Design Requests</h1>
+              <h1 className="text-3xl font-bold text-slate-900 mb-8 tracking-tight">My Design Requests</h1>
               {myRequests.length === 0 ? (
-                <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm">
-                  <div className="text-5xl mb-4">📭</div>
-                  <h2 className="text-xl font-bold text-slate-800 mb-2">No Requests Yet</h2>
-                  <p className="text-slate-500 mb-6">You haven't hired a designer for any custom requests.</p>
-                  <button onClick={() => setActiveView('designer')} className="bg-purple-600 text-white font-bold px-6 py-3 rounded-xl hover:bg-purple-700 transition">Hire a Designer</button>
+                <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+                  <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4"><Inbox className="w-8 h-8" /></div>
+                  <h2 className="text-lg font-bold text-slate-900 mb-2">No Requests Yet</h2>
+                  <p className="text-slate-500 mb-6 text-sm">You haven't hired a designer for any custom requests.</p>
+                  <button onClick={() => setActiveView('designer')} className="bg-slate-900 text-white font-medium px-6 py-2.5 rounded-lg hover:bg-slate-800 transition shadow-sm">Hire a Designer</button>
                 </div>
               ) : (
                 <div className="grid gap-6">
                   {myRequests.map(req => (
-                    <div key={req.id} className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row gap-6 relative overflow-hidden">
-                      {req.status === 'completed' && <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500 opacity-10 rounded-bl-full pointer-events-none"></div>}
+                    <div key={req.id} className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row gap-6 relative overflow-hidden">
+                      {req.status === 'completed' && <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 opacity-10 rounded-bl-full pointer-events-none"></div>}
                       <div className="flex-1">
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-black text-xl text-slate-800">{req.subject}</h3>
-                          <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border ${req.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : req.status === 'accepted' ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-amber-50 text-amber-600 border-amber-200'}`}>
+                          <h3 className="font-bold text-xl text-slate-900">{req.subject}</h3>
+                          <span className={`text-[9px] font-bold uppercase px-2.5 py-1 rounded-md border ${req.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : req.status === 'accepted' ? 'bg-slate-100 text-slate-600 border-slate-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                             {req.status}
                           </span>
                         </div>
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Designer: {req.designerName || 'Pending Assignment'}</p>
-                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-4">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Designer: {req.designerName || 'Pending Assignment'}</p>
+                        <div className="bg-slate-50 rounded-lg p-4 border border-slate-100 mb-4">
                           <p className="text-sm text-slate-600 whitespace-pre-wrap">{req.details}</p>
                         </div>
                         {req.mediaUrl && (
@@ -668,11 +687,11 @@ function Dashboard() {
                           </div>
                         )}
                         {req.status === 'completed' && req.finalDesignUrl && (
-                          <div className="mt-4 p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
-                            <p className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-3">✅ Final Design Delivered</p>
+                          <div className="mt-4 p-4 bg-emerald-50/50 border border-emerald-100 rounded-lg">
+                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-3 flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Final Design Delivered</p>
                             <div className="flex items-center gap-4">
-                              <img src={req.finalDesignUrl} alt="Final Design" className="w-20 h-20 object-cover rounded-lg shadow-sm" />
-                              <a href={req.finalDesignUrl} target="_blank" rel="noreferrer" download className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm shadow-sm transition">
+                              <img src={req.finalDesignUrl} alt="Final Design" className="w-20 h-20 object-cover rounded-md shadow-sm border border-emerald-100" />
+                              <a href={req.finalDesignUrl} target="_blank" rel="noreferrer" download className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-md text-sm shadow-sm transition">
                                 Download High-Res File
                               </a>
                             </div>
@@ -687,27 +706,27 @@ function Dashboard() {
           )}
 
           {activeView === 'settings' && (
-            <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="mb-8 border-b border-slate-200 pb-6"><h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Settings</h1><p className="text-slate-500 mt-2 font-medium">Manage your organization's profile and preferences.</p></div>
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-10 mb-6">
-                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"><span className="text-indigo-600">🏢</span> Firm Details</h2>
-                <form onSubmit={handleUpdateProfile} className="flex flex-col gap-5">
-                  <div><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Organization Name</label><input type="text" value={editFirmName} onChange={(e) => setEditFirmName(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all" /></div>
-                  <div><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">WhatsApp / Mobile Number</label><input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="e.g. +91 9876543210" /></div>
-                  <div><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Registered Email</label><input type="email" value={user?.email || ''} disabled className="w-full p-4 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-400 cursor-not-allowed" /></div>
+            <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 p-4 md:p-8">
+              <div className="mb-8 border-b border-slate-200 pb-6"><h1 className="text-3xl font-bold text-slate-900 tracking-tight">Settings</h1><p className="text-slate-500 mt-1 font-medium">Manage your organization's profile and preferences.</p></div>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 mb-6">
+                <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2"><Building className="w-5 h-5 text-slate-400" /> Firm Details</h2>
+                <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
+                  <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Organization Name</label><input type="text" value={editFirmName} onChange={(e) => setEditFirmName(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all" /></div>
+                  <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">WhatsApp / Mobile Number</label><input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all" placeholder="e.g. +91 9876543210" /></div>
+                  <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Registered Email</label><input type="email" value={user?.email || ''} disabled className="w-full p-3.5 bg-slate-100 border border-slate-200 rounded-lg font-medium text-slate-400 cursor-not-allowed" /></div>
 
-                  <div className="flex items-center gap-3 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
-                    <input type="checkbox" checked={editIsPremium} onChange={(e) => setEditIsPremium(e.target.checked)} className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500" id="premium-toggle" />
-                    <label htmlFor="premium-toggle" className="font-bold text-indigo-900 cursor-pointer flex-1">
+                  <div className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-lg mt-2">
+                    <input type="checkbox" checked={editIsPremium} onChange={(e) => setEditIsPremium(e.target.checked)} className="w-4 h-4 rounded text-slate-900 focus:ring-slate-900" id="premium-toggle" />
+                    <label htmlFor="premium-toggle" className="font-bold text-slate-900 cursor-pointer flex-1">
                       CampSend Premium
-                      <span className="block text-xs text-indigo-500 font-medium">Remove watermark from generated campaigns.</span>
+                      <span className="block text-[11px] text-slate-500 font-medium">Remove watermark from generated campaigns.</span>
                     </label>
                   </div>
 
-                  <div className="pt-4 mt-2 border-t border-slate-100 flex justify-end"><button type="submit" disabled={isUpdatingProfile} className="w-full md:w-auto bg-indigo-600 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50">{isUpdatingProfile ? "Saving..." : "Save Changes"}</button></div>
+                  <div className="pt-6 mt-2 border-t border-slate-100 flex justify-end"><button type="submit" disabled={isUpdatingProfile} className="w-full md:w-auto bg-slate-900 text-white font-medium py-2.5 px-6 rounded-lg shadow-sm hover:bg-slate-800 active:scale-95 transition-all disabled:opacity-50">{isUpdatingProfile ? "Saving..." : "Save Changes"}</button></div>
                 </form>
               </div>
-              <div className="md:hidden"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2 text-center">Account Security</p><button onClick={handleLogout} className="w-full py-4 bg-white border border-red-200 text-red-500 font-bold rounded-2xl shadow-sm hover:bg-red-50 transition-colors">Sign Out Securely</button></div>
+              <div className="md:hidden"><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2 text-center">Account Security</p><button onClick={handleLogout} className="w-full py-3 bg-white border border-red-200 text-red-500 font-medium rounded-lg shadow-sm hover:bg-red-50 transition-colors">Sign Out Securely</button></div>
             </div>
           )}
 

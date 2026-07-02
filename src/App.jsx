@@ -4,6 +4,7 @@ import { signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPass
 import { doc, setDoc, serverTimestamp, collection, getDocs, query, orderBy, limit, where } from 'firebase/firestore';
 import { auth, googleProvider, db } from './config/firebase';
 import toast, { Toaster } from 'react-hot-toast';
+import { Rocket, Flame, Leaf, Smartphone, Palette } from 'lucide-react';
 
 // ==========================================
 // 🚀 ENTERPRISE LAZY LOADING
@@ -117,11 +118,11 @@ function HomePage() {
             Camp<span className="text-slate-800">Send</span>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/auth')} className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg hover:-translate-y-0.5 active:scale-95">
-              📱 Client Login
+            <button onClick={() => navigate('/auth')} className="bg-slate-900 text-white px-5 py-2 rounded-lg font-medium hover:bg-slate-800 transition shadow-sm hover:-translate-y-0.5 flex items-center gap-2 text-sm">
+              <Smartphone className="w-4 h-4" /> Client Login
             </button>
-            <button onClick={() => navigate('/designer-portal')} className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg hover:-translate-y-0.5 active:scale-95">
-              🎨 Designer Portal
+            <button onClick={() => navigate('/designer-portal')} className="bg-indigo-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-indigo-700 transition shadow-sm hover:-translate-y-0.5 flex items-center gap-2 text-sm">
+              <Palette className="w-4 h-4" /> Designer Portal
             </button>
           </div>
         </div>
@@ -130,8 +131,8 @@ function HomePage() {
       <main className="flex-1 flex flex-col pt-20">
         {/* HERO SECTION */}
         <section className="px-6 max-w-6xl mx-auto w-full text-center py-20 md:py-28 animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <div className="inline-block bg-indigo-50 text-indigo-700 font-bold px-4 py-1.5 rounded-full text-sm mb-6 border border-indigo-100">
-            🚀 The #1 Platform for User-Generated Campaigns
+          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 font-bold px-4 py-1.5 rounded-full text-sm mb-6 border border-indigo-100">
+            <Rocket className="w-4 h-4" /> The #1 Platform for User-Generated Campaigns
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-slate-900 leading-tight">
             Scale Your <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-purple-600">Viral Message</span>
@@ -140,7 +141,7 @@ function HomePage() {
             Empower local people with a mobile-first custom poster maker. Automate photo framing, track your reach, and drive massive awareness through instant WhatsApp sharing right from any smartphone.
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button onClick={() => navigate('/auth')} className="w-full sm:w-auto bg-indigo-600 text-white font-black text-xl py-4 px-12 rounded-xl shadow-[0_8px_30px_rgb(79,70,229,0.3)] hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95">
+            <button onClick={() => navigate('/auth')} className="w-full sm:w-auto bg-slate-900 text-white font-bold text-lg py-3 px-10 rounded-xl shadow-sm hover:bg-slate-800 transition-all active:scale-95">
               Start Building Free
             </button>
           </div>
@@ -159,10 +160,10 @@ function HomePage() {
             {isLoading ? (
               <div className="flex justify-center items-center py-10 text-indigo-600 font-bold animate-pulse">Loading viral network...</div>
             ) : publicCampaigns.length === 0 ? (
-              <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center max-w-2xl mx-auto">
-                <span className="text-4xl mb-4 block">🌱</span>
+              <div className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-12 text-center max-w-2xl mx-auto">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100"><Leaf className="w-8 h-8 text-emerald-500" /></div>
                 <h3 className="text-xl font-bold text-slate-800 mb-2">The platform is ready</h3>
-                <p className="text-slate-500">Log in, create a campaign, and check "Feature on Homepage" to see it here!</p>
+                <p className="text-slate-500 text-sm">Log in, create a campaign, and check "Feature on Homepage" to see it here!</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -172,8 +173,8 @@ function HomePage() {
                       <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url(${camp.backgroundImage})` }}></div>
                       <div className="absolute inset-0 bg-linear-to-t from-slate-900/90 via-slate-900/20 to-transparent"></div>
                       <div className="absolute bottom-5 left-5 right-5 flex justify-between items-end">
-                        <span className="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-white/30">
-                          🔥 {camp.postersGenerated || 0} Generated
+                        <span className="bg-white/90 backdrop-blur-md text-slate-800 text-xs font-bold px-3 py-1.5 rounded-md shadow-sm flex items-center gap-1.5">
+                          <Flame className="w-3.5 h-3.5 text-orange-500" /> {camp.postersGenerated || 0} Generated
                         </span>
                         <div className="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">→</div>
                       </div>
@@ -405,9 +406,9 @@ function AuthPage() {
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-200 rounded-full blur-3xl opacity-50"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-200 rounded-full blur-3xl opacity-50"></div>
 
-      <div className="bg-white p-8 md:p-10 rounded-4xl shadow-2xl w-full max-w-md relative z-10 border border-slate-100">
+      <div className="bg-white p-8 md:p-10 rounded-2xl shadow-xl w-full max-w-md relative z-10 border border-slate-100">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-black text-slate-800">{isLoginMode ? "Welcome Back" : "Register Firm"}</h2>
+          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">{isLoginMode ? "Welcome Back" : "Register Firm"}</h2>
           <button onClick={() => navigate('/')} className="text-slate-400 font-bold hover:text-slate-800 transition bg-slate-50 w-10 h-10 rounded-full flex items-center justify-center">✕</button>
         </div>
 
@@ -421,18 +422,18 @@ function AuthPage() {
         <form onSubmit={handleEmailAuth} className="flex flex-col gap-4">
           {!isLoginMode && (
             <div className="animate-in fade-in slide-in-from-top-2 duration-300 flex flex-col gap-4">
-              <input type="text" placeholder="Firm / Organization Name" value={firmName} onChange={(e) => setFirmName(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 transition-all" />
-              <input type="tel" placeholder="WhatsApp / Mobile Number (e.g. +91...)" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 transition-all" />
+              <input type="text" placeholder="Firm / Organization Name" value={firmName} onChange={(e) => setFirmName(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-medium text-slate-900 transition-all" />
+              <input type="tel" placeholder="WhatsApp / Mobile Number (e.g. +91...)" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-medium text-slate-900 transition-all" />
             </div>
           )}
-          <input type="email" placeholder="Organization Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all" />
-          <input type="password" placeholder="Password (Min 6 chars)" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all" />
+          <input type="email" placeholder="Organization Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-medium transition-all" />
+          <input type="password" placeholder="Password (Min 6 chars)" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-medium transition-all" />
           <div className="flex justify-between items-center">
             <button type="button" onClick={handlePasswordReset} className="text-sm text-indigo-600 hover:underline">Forgot password?</button>
             <div />
           </div>
 
-          <button type="submit" disabled={authLoading} className="w-full bg-indigo-600 text-white font-bold text-lg py-4 rounded-xl mt-4 shadow-[0_8px_30px_rgb(79,70,229,0.3)] hover:bg-indigo-700 hover:-translate-y-1 disabled:opacity-70 disabled:translate-y-0 transition-all active:scale-95">
+          <button type="submit" disabled={authLoading} className="w-full bg-slate-900 text-white font-medium text-base py-3.5 rounded-lg mt-4 shadow-sm hover:bg-slate-800 disabled:opacity-70 disabled:translate-y-0 transition-all active:scale-95">
             {authLoading ? "Processing..." : (isLoginMode ? "Enter Dashboard" : "Register Account")}
           </button>
         </form>

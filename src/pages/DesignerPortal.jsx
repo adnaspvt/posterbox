@@ -40,6 +40,13 @@ function DesignerPortal() {
   const [activeTab, setActiveTab] = useState('templates');
   const [isFetching, setIsFetching] = useState(false);
   const [workRequests, setWorkRequests] = useState([]);
+  const [portfolioItems, setPortfolioItems] = useState([]);
+
+  // ==========================================
+  // PORTFOLIO UPLOAD FORM
+  // ==========================================
+  const [portfolioForm, setPortfolioForm] = useState({ title: '', description: '', imageFile: null });
+  const [uploadingPortfolio, setUploadingPortfolio] = useState(false);
 
   // ==========================================
   // TEMPLATE UPLOAD FORM
@@ -87,6 +94,7 @@ function DesignerPortal() {
         setAuthStatus('unlocked');
         fetchDesignerTemplates(user.uid);
         fetchEarnings(user.uid, data.paidOut || 0);
+        fetchPortfolioItems(user.uid);
       } else {
         setAuthStatus('apply');
         setSignupData(prev => ({
@@ -155,6 +163,16 @@ function DesignerPortal() {
       console.error('Error fetching templates:', error);
     } finally {
       setIsFetching(false);
+    }
+  };
+
+  const fetchPortfolioItems = async (uid) => {
+    try {
+      const q = query(collection(db, 'portfolioItems'), where('designerId', '==', uid));
+      const snap = await getDocs(q);
+      setPortfolioItems(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+    } catch (error) {
+      console.error('Error fetching portfolio:', error);
     }
   };
 
@@ -239,6 +257,59 @@ function DesignerPortal() {
       toast.error('Failed to update profile.', { id: toastId });
     } finally {
       setIsUpdatingProfile(false);
+    }
+  };
+
+  const handleUploadPortfolioItem = async (e) => {
+    e.preventDefault();
+    if (!portfolioForm.title || !portfolioForm.imageFile) return toast.error("Title and image are required!");
+    setUploadingPortfolio(true);
+    const toastId = toast.loading('Uploading portfolio item...');
+    try {
+      const formData = new FormData();
+      formData.append('image', portfolioForm.imageFile);
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (data.success) {
+        const docRef = await addDoc(collection(db, 'portfolioItems'), {
+          designerId: designer.uid,
+          title: portfolioForm.title,
+          description: portfolioForm.description,
+          imageUrl: data.data.url,
+          createdAt: serverTimestamp()
+        });
+
+        setPortfolioItems(prev => [{
+          id: docRef.id,
+          designerId: designer.uid,
+          title: portfolioForm.title,
+          description: portfolioForm.description,
+          imageUrl: data.data.url,
+          createdAt: { seconds: Math.floor(Date.now() / 1000) }
+        }, ...prev]);
+
+        setPortfolioForm({ title: '', description: '', imageFile: null });
+        toast.success("Portfolio item added!", { id: toastId });
+      } else {
+        toast.error("Failed to upload image.", { id: toastId });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred.", { id: toastId });
+    } finally {
+      setUploadingPortfolio(false);
+    }
+  };
+
+  const handleDeletePortfolioItem = async (itemId) => {
+    if (!window.confirm("Are you sure you want to delete this portfolio item?")) return;
+    try {
+      await deleteDoc(doc(db, 'portfolioItems', itemId));
+      setPortfolioItems(prev => prev.filter(item => item.id !== itemId));
+      toast.success("Item deleted!");
+    } catch (err) {
+      toast.error("Failed to delete.");
     }
   };
 
@@ -807,9 +878,10 @@ function DesignerPortal() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b border-slate-700">
+        <div className="flex gap-4 mb-8 border-b border-slate-700 overflow-x-auto pb-2">
           {[
             { id: 'templates', label: '📋 My Templates', icon: '📋' },
+            { id: 'portfolio', label: '🖼️ Portfolio Builder', icon: '🖼️' },
             { id: 'inbox', label: `📥 Work Inbox ${workRequests.filter(r => r.status === 'pending').length > 0 ? `(${workRequests.filter(r => r.status === 'pending').length})` : ''}`, icon: '📥' },
             { id: 'upload', label: '⬆️ Upload New', icon: '⬆️' },
             { id: 'profile', label: '👤 Profile', icon: '👤' }
@@ -1069,6 +1141,62 @@ function DesignerPortal() {
               >
                 {uploading ? '⬆️ Processing...' : '✏️ Configure Elements (Pro Studio)'}
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Portfolio Tab */}
+        {activeTab === 'portfolio' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1">
+              <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 sticky top-24 shadow-lg">
+                <h2 className="text-xl font-black text-white mb-6">Add Portfolio Item</h2>
+                <form onSubmit={handleUploadPortfolioItem} className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Project Title</label>
+                    <input type="text" required value={portfolioForm.title} onChange={e => setPortfolioForm({ ...portfolioForm, title: e.target.value })} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition" placeholder="e.g. Modern UI Kit" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Description</label>
+                    <textarea rows="3" value={portfolioForm.description} onChange={e => setPortfolioForm({ ...portfolioForm, description: e.target.value })} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition resize-none" placeholder="Details about this project..."></textarea>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Project Image</label>
+                    <input type="file" required accept="image/*" onChange={e => setPortfolioForm({ ...portfolioForm, imageFile: e.target.files[0] })} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer" />
+                  </div>
+                  <button type="submit" disabled={uploadingPortfolio} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-indigo-600/20 active:scale-95 disabled:opacity-50 mt-4">
+                    {uploadingPortfolio ? "Uploading..." : "Add to Portfolio"}
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div className="lg:col-span-2">
+              <h2 className="text-2xl font-black text-white mb-6">Your Live Portfolio</h2>
+              {portfolioItems.length === 0 ? (
+                <div className="bg-slate-800 rounded-2xl p-12 text-center border border-slate-700">
+                  <span className="text-5xl mb-4 block">🖼️</span>
+                  <p className="text-slate-400 font-medium">Your portfolio is empty. Upload your best work to attract clients!</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {portfolioItems.map(item => (
+                    <div key={item.id} className="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 group shadow-lg">
+                      <div className="aspect-[4/3] bg-slate-900 relative">
+                        <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                        <div className="absolute inset-0 bg-linear-to-t from-slate-900 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-300"></div>
+                        <button onClick={() => handleDeletePortfolioItem(item.id)} className="absolute top-3 right-3 bg-red-600/90 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition hover:bg-red-500 shadow-lg">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                      </div>
+                      <div className="p-5">
+                        <h3 className="font-bold text-white text-lg truncate">{item.title}</h3>
+                        <p className="text-slate-400 text-sm mt-1 line-clamp-2">{item.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

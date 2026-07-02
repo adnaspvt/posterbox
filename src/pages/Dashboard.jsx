@@ -50,6 +50,11 @@ function Dashboard() {
   const [isSendingRequest, setIsSendingRequest] = useState(false);
   const [myRequests, setMyRequests] = useState([]);
 
+  // --- PORTFOLIO VIEWER STATE ---
+  const [viewingPortfolioDesigner, setViewingPortfolioDesigner] = useState(null);
+  const [portfolioDesignerItems, setPortfolioDesignerItems] = useState([]);
+  const [isFetchingPortfolio, setIsFetchingPortfolio] = useState(false);
+
   // ==========================================
   // PRO STUDIO STATE (WITH UNDO/REDO)
   // ==========================================
@@ -261,6 +266,22 @@ function Dashboard() {
       toast.success("Request Sent! We will contact you shortly.", { id: toastId });
       setDesignSubject(''); setDesignDetails(''); setDesignMediaFile(null); setSelectedDesigner(null); setActiveView('overview');
     } catch (e) { toast.error("Failed to send request.", { id: toastId }); } finally { setIsSendingRequest(false); }
+  };
+
+  const handleViewDesignerPortfolio = async (designer, e) => {
+    e.stopPropagation();
+    setViewingPortfolioDesigner(designer);
+    setIsFetchingPortfolio(true);
+    try {
+      const q = query(collection(db, "portfolioItems"), where("designerId", "==", designer.id));
+      const snap = await getDocs(q);
+      setPortfolioDesignerItems(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load portfolio.");
+    } finally {
+      setIsFetchingPortfolio(false);
+    }
   };
 
   const handleDirectWhatsApp = () => {
@@ -560,9 +581,7 @@ function Dashboard() {
                           <div className="flex justify-between items-start mb-2">
                             <div className="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-black text-sm">{d.name.charAt(0)}</div>
                             <div className="flex gap-1 flex-wrap justify-end">
-                              {d.portfolio && (
-                                <a href={d.portfolio} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-[10px] bg-slate-100 text-slate-600 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 rounded font-bold transition-colors">Portfolio ↗</a>
-                              )}
+                              <button onClick={(e) => handleViewDesignerPortfolio(d, e)} className="text-[10px] bg-indigo-50 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100 px-2 py-1 rounded font-bold transition-colors">Portfolio</button>
                               {d.behanceLink && (
                                 <a href={d.behanceLink} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-[10px] bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded font-bold transition-colors">Behance ↗</a>
                               )}
@@ -777,6 +796,74 @@ function Dashboard() {
 
         </div>
       </main>
+
+      {/* PORTFOLIO MODAL */}
+      {viewingPortfolioDesigner && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-5xl shadow-2xl relative overflow-hidden flex flex-col max-h-full">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-400 rounded-full blur-[80px] opacity-10 pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
+
+            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-white/80 backdrop-blur sticky top-0 z-10">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-black text-xl">{viewingPortfolioDesigner.name.charAt(0)}</div>
+                <div>
+                  <h2 className="text-2xl font-black text-slate-800">{viewingPortfolioDesigner.name}'s Portfolio</h2>
+                  <p className="text-sm font-bold text-indigo-600 uppercase tracking-widest">{viewingPortfolioDesigner.specialty}</p>
+                </div>
+              </div>
+              <button onClick={() => setViewingPortfolioDesigner(null)} className="text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+
+            <div className="p-6 md:p-8 overflow-y-auto flex-1 bg-slate-50/50">
+              {isFetchingPortfolio ? (
+                <div className="flex items-center justify-center py-20"><div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div></div>
+              ) : portfolioDesignerItems.length === 0 ? (
+                <div className="text-center py-20">
+                  <span className="text-5xl mb-4 block">🖼️</span>
+                  <p className="text-slate-500 font-medium text-lg">No portfolio items uploaded yet.</p>
+                  {viewingPortfolioDesigner.portfolio && (
+                    <a href={viewingPortfolioDesigner.portfolio} target="_blank" rel="noreferrer" className="inline-block mt-4 text-indigo-600 font-bold hover:underline">View External Portfolio ↗</a>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {portfolioDesignerItems.map(item => (
+                    <div key={item.id} className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition group">
+                      <div className="aspect-[4/3] bg-slate-100 overflow-hidden">
+                        <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                      </div>
+                      <div className="p-5">
+                        <h3 className="font-bold text-slate-800 text-lg truncate">{item.title}</h3>
+                        <p className="text-slate-500 text-sm mt-2 line-clamp-2">{item.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-slate-100 bg-white flex flex-wrap gap-4 items-center justify-between">
+              <div className="flex gap-2">
+                {viewingPortfolioDesigner.portfolio && (
+                  <a href={viewingPortfolioDesigner.portfolio} target="_blank" rel="noreferrer" className="text-xs bg-slate-100 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-lg font-bold transition-colors">External Website ↗</a>
+                )}
+                {viewingPortfolioDesigner.behanceLink && (
+                  <a href={viewingPortfolioDesigner.behanceLink} target="_blank" rel="noreferrer" className="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-2 rounded-lg font-bold transition-colors">Behance ↗</a>
+                )}
+                {viewingPortfolioDesigner.socialLink && (
+                  <a href={viewingPortfolioDesigner.socialLink} target="_blank" rel="noreferrer" className="text-xs bg-pink-50 text-pink-600 hover:bg-pink-100 px-3 py-2 rounded-lg font-bold transition-colors">Social ↗</a>
+                )}
+              </div>
+              <button onClick={() => { setSelectedDesigner(viewingPortfolioDesigner); setViewingPortfolioDesigner(null); }} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2 rounded-xl transition shadow-sm">
+                Hire {viewingPortfolioDesigner.name}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

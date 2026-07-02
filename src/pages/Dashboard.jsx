@@ -422,11 +422,11 @@ function Dashboard() {
           <button onClick={() => setActiveView('analytics')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'analytics' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><LineChart className="w-5 h-5" /> Analytics</button>
           <button onClick={() => setActiveView('templates')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'templates' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><ImageIcon className="w-5 h-5" /> Master Templates</button>
           <button onClick={() => setActiveView('library')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'library' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><Layers className="w-5 h-5" /> Template Library</button>
-          
+
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-3 mt-6">Workspace</p>
           <button onClick={() => setActiveView('branding')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'branding' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><PaintBucket className="w-5 h-5" /> Brand Kit</button>
           <button onClick={() => setActiveView('team')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'team' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><Users className="w-5 h-5" /> Team</button>
-          
+
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-3 mt-6">Services & Support</p>
           <button onClick={() => setActiveView('designer')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'designer' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><Sparkles className="w-5 h-5" /> Hire a Designer</button>
           <button onClick={() => setActiveView('requests')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ${activeView === 'requests' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}><Inbox className="w-5 h-5" /> My Requests</button>

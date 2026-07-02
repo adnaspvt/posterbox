@@ -4,9 +4,11 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, addDoc, getDocs, query, where, serverTimestamp, deleteDoc, doc, updateDoc, getDoc, increment } from 'firebase/firestore';
 import { auth, db, IMGBB_API_KEY } from '../config/firebase'; // 🚀 ImgBB Key Imported
 import { Rnd } from 'react-rnd';
+import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 
 import BrandKitEditor from '../components/BrandKitEditor';
+import NotificationBell from '../components/NotificationBell';
 import TeamManagement from '../components/TeamManagement';
 import AdvancedAnalytics from '../components/AdvancedAnalytics';
 import CampaignTemplatesLibrary from '../components/CampaignTemplatesLibrary';
@@ -225,6 +227,18 @@ function Dashboard() {
         status: 'pending', 
         createdAt: serverTimestamp() 
       });
+      
+      if (selectedDesigner) {
+        await addDoc(collection(db, "notifications"), {
+          userId: selectedDesigner.id,
+          title: "New Job Request",
+          message: `${userProfile?.firmName || 'A client'} requested your design services: ${designSubject}`,
+          type: "job",
+          isRead: false,
+          createdAt: serverTimestamp()
+        });
+      }
+
       toast.success("Request Sent! We will contact you shortly.", { id: toastId });
       setDesignSubject(''); setDesignDetails(''); setSelectedDesigner(null); setActiveView('overview');
     } catch (e) { toast.error("Failed to send request.", { id: toastId }); } finally { setIsSendingRequest(false); }
@@ -232,7 +246,7 @@ function Dashboard() {
 
   const handleDirectWhatsApp = () => {
     if (!whatsappNumber) return toast.error("WhatsApp contact is currently unavailable.");
-    const message = encodeURIComponent(`Hi PosterBox Team! I am messaging from ${userProfile?.firmName || 'my dashboard'}.`);
+    const message = encodeURIComponent(`Hi CampSend Team! I am messaging from ${userProfile?.firmName || 'my dashboard'}.`);
     window.open(`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
   };
 
@@ -353,7 +367,7 @@ function Dashboard() {
     <div className="min-h-screen bg-[#F8FAFC] flex font-sans text-slate-800 pb-20 md:pb-0">
       
       <aside className="w-72 bg-white border-r border-slate-200 hidden md:flex md:flex-col shrink-0 z-40 relative shadow-sm">
-        <div className="p-8 border-b border-slate-100 flex items-center gap-3"><div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-600/30"><span className="text-white font-black text-xl leading-none">P</span></div><div className="text-2xl font-black text-slate-800 tracking-tight cursor-pointer" onClick={() => navigate('/')}>Poster<span className="text-indigo-600">Box</span></div></div>
+        <div className="p-8 border-b border-slate-100 flex items-center gap-3"><div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-600/30"><span className="text-white font-black text-xl leading-none">C</span></div><div className="text-2xl font-black text-slate-800 tracking-tight cursor-pointer" onClick={() => navigate('/')}>Camp<span className="text-indigo-600">Send</span></div></div>
         <nav className="flex-1 p-6 flex flex-col gap-2 overflow-y-auto">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2">Main Menu</p>
           <button onClick={() => setActiveView('overview')} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200 ${activeView === 'overview' ? 'bg-indigo-50 text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}><span className="text-xl">📊</span> My Campaigns</button>
@@ -370,7 +384,13 @@ function Dashboard() {
           <button onClick={() => setActiveView('settings')} className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold transition-all duration-200 ${activeView === 'settings' ? 'bg-slate-100 text-slate-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}><span className="text-xl">⚙️</span> Settings</button>
         </nav>
         <div className="p-6 border-t border-slate-100 bg-slate-50/50">
-          <div className="flex items-center gap-3 mb-6 bg-white p-3 rounded-2xl border border-slate-200 shadow-sm"><div className="w-10 h-10 bg-linear-to-tr from-indigo-600 to-purple-600 text-white rounded-xl flex items-center justify-center font-black text-lg shadow-inner">{userProfile?.firmName ? userProfile.firmName.charAt(0).toUpperCase() : "U"}</div><div className="overflow-hidden flex-1"><p className="text-sm font-bold text-slate-800 truncate">{userProfile?.firmName || "My Organization"}</p><p className="text-xs font-medium text-slate-400 truncate">{user?.email}</p></div></div>
+          <div className="flex flex-col gap-2 mb-6">
+            <div className="flex justify-between items-center px-1">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Account</span>
+              <NotificationBell userId={user?.uid} />
+            </div>
+            <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-sm"><div className="w-10 h-10 bg-linear-to-tr from-indigo-600 to-purple-600 text-white rounded-xl flex items-center justify-center font-black text-lg shadow-inner">{userProfile?.firmName ? userProfile.firmName.charAt(0).toUpperCase() : "U"}</div><div className="overflow-hidden flex-1"><p className="text-sm font-bold text-slate-800 truncate">{userProfile?.firmName || "My Organization"}</p><p className="text-xs font-medium text-slate-400 truncate">{user?.email}</p></div></div>
+          </div>
           <button onClick={() => navigate('/designer')} className="w-full py-3 mb-2 text-indigo-600 bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 rounded-xl font-bold transition-all duration-200 shadow-sm flex items-center justify-center gap-2">🎨 Designer Portal</button>
           <button onClick={handleLogout} className="w-full py-3 text-slate-500 bg-white border border-slate-200 hover:border-red-200 hover:text-red-500 hover:bg-red-50 rounded-xl font-bold transition-all duration-200 shadow-sm">Sign Out</button>
         </div>
@@ -389,8 +409,9 @@ function Dashboard() {
       <main className="flex-1 flex flex-col h-full overflow-y-auto relative scroll-smooth">
         {activeView !== 'studio' && (
           <header className="md:hidden bg-white/80 backdrop-blur-md border-b border-slate-200 py-4 px-6 flex justify-between items-center sticky top-0 z-40">
-            <div className="flex items-center gap-2"><div className="w-6 h-6 bg-indigo-600 rounded-md flex items-center justify-center"><span className="text-white font-black text-xs">P</span></div><div className="text-xl font-black text-slate-800 tracking-tight">Poster<span className="text-indigo-600">Box</span></div></div>
+            <div className="flex items-center gap-2"><div className="w-6 h-6 bg-indigo-600 rounded-md flex items-center justify-center"><span className="text-white font-black text-xs">C</span></div><div className="text-xl font-black text-slate-800 tracking-tight">Camp<span className="text-indigo-600">Send</span></div></div>
             <div className="flex items-center gap-3">
+              <NotificationBell userId={user?.uid} />
               <button onClick={() => navigate('/designer')} className="text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm flex items-center gap-1"><span>🎨</span> Portal</button>
               <div className="w-8 h-8 bg-linear-to-tr from-indigo-600 to-purple-600 text-white rounded-full flex items-center justify-center font-black text-sm shadow-md">{userProfile?.firmName ? userProfile.firmName.charAt(0).toUpperCase() : "U"}</div>
             </div>
@@ -422,7 +443,38 @@ function Dashboard() {
                            <h3 className="font-bold text-lg text-slate-800 truncate pr-2">{camp.title}</h3>
                            {camp.isPublic && <span className="shrink-0 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] font-black uppercase px-2 py-0.5 rounded">Public</span>}
                         </div>
-                        <div className="flex gap-4"><div className="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><p className="text-[9px] font-black text-slate-400 uppercase">Reach</p><p className="font-bold text-slate-700 text-sm">{camp.views || 0}</p></div><div className="bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100/50"><p className="text-[9px] font-black text-indigo-400 uppercase">Downs</p><p className="font-bold text-indigo-700 text-sm">{camp.postersGenerated || 0}</p></div></div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex gap-4"><div className="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><p className="text-[9px] font-black text-slate-400 uppercase">Reach</p><p className="font-bold text-slate-700 text-sm">{camp.views || 0}</p></div><div className="bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100/50"><p className="text-[9px] font-black text-indigo-400 uppercase">Downs</p><p className="font-bold text-indigo-700 text-sm">{camp.postersGenerated || 0}</p></div></div>
+                          
+                          <div className="flex flex-col items-center gap-1 group/qr cursor-pointer relative" onClick={(e) => {
+                            // Quick hack to download QR code SVG
+                            const svg = e.currentTarget.querySelector('svg');
+                            if(!svg) return;
+                            const svgData = new XMLSerializer().serializeToString(svg);
+                            const canvas = document.createElement("canvas");
+                            const ctx = canvas.getContext("2d");
+                            const img = new Image();
+                            img.onload = () => {
+                                canvas.width = img.width;
+                                canvas.height = img.height;
+                                ctx.fillStyle = "white";
+                                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                ctx.drawImage(img, 0, 0);
+                                const pngFile = canvas.toDataURL("image/png");
+                                const downloadLink = document.createElement("a");
+                                downloadLink.download = `QR_${camp.title.replace(/\s+/g, '_')}.png`;
+                                downloadLink.href = `${pngFile}`;
+                                downloadLink.click();
+                            };
+                            img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+                            toast.success("Downloading QR Code...");
+                          }}>
+                            <div className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-indigo-400 hover:shadow-md transition-all">
+                              <QRCodeSVG value={`${window.location.origin}/generator?id=${camp.id}`} size={48} level="Q" />
+                            </div>
+                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest opacity-0 group-hover/qr:opacity-100 transition-opacity absolute -bottom-4">Click to DL</span>
+                          </div>
+                        </div>
                       </div>
                       <div className="mt-4 flex gap-2"><button onClick={() => handleEditCampaign(camp)} className="flex-1 bg-white border border-slate-200 text-slate-600 font-bold py-2 rounded-lg text-sm hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm">Edit</button><button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/generator?id=${camp.id}`); toast.success("Share Link Copied!"); }} className="flex-1 bg-indigo-50 text-indigo-600 font-bold py-2 rounded-lg text-sm hover:bg-indigo-100 transition-colors shadow-sm">Copy Link</button><button onClick={() => handleDeleteCampaign(camp.id)} className="w-10 flex items-center justify-center bg-white border border-red-100 text-red-400 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors shadow-sm">🗑️</button></div>
                     </div>
@@ -539,7 +591,7 @@ function Dashboard() {
                    <div className="flex items-center gap-3 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
                      <input type="checkbox" checked={editIsPremium} onChange={(e) => setEditIsPremium(e.target.checked)} className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500" id="premium-toggle" />
                      <label htmlFor="premium-toggle" className="font-bold text-indigo-900 cursor-pointer flex-1">
-                       PosterBox Premium
+                       CampSend Premium
                        <span className="block text-xs text-indigo-500 font-medium">Remove watermark from generated campaigns.</span>
                      </label>
                    </div>

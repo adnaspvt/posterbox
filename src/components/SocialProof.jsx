@@ -30,7 +30,7 @@ export default function SocialProof() {
       name: 'Priya Sharma',
       role: 'Political Campaign Manager',
       image: '👩‍💼',
-      text: 'PosterBox helped us reach 500K+ voters in just 2 weeks. The viral mechanics are insane!',
+      text: 'CampSend helped us reach 500K+ voters in just 2 weeks. The viral mechanics are insane!',
       metrics: '500K+ Reach'
     },
     {

@@ -162,6 +162,16 @@ function Admin() {
         const currentPaidOut = userDoc.data().paidOut || 0;
         await updateDoc(doc(db, "users", request.designerId), { paidOut: currentPaidOut + request.amount });
       }
+
+      // 3. Notify Designer
+      await addDoc(collection(db, "notifications"), {
+        userId: request.designerId,
+        title: "Payout Approved!",
+        message: `Your payout request for ₹${request.amount} has been approved and processed.`,
+        type: "payment",
+        isRead: false,
+        createdAt: serverTimestamp()
+      });
       
       toast.success("Payout marked as paid.");
       fetchAllData();
@@ -176,7 +186,7 @@ function Admin() {
   const handleWhatsAppContact = (request) => {
     const phone = window.prompt(`Enter WhatsApp number for ${request.firmName} (Include country code, e.g. 919876543210):`, request.clientPhone && request.clientPhone !== 'Not Provided' ? request.clientPhone : "+91");
     if (!phone) return;
-    const message = encodeURIComponent(`Hi ${request.firmName}, this is the PosterBox Design Team! We received your request regarding: "${request.subject}". How can we assist you with this design today?`);
+    const message = encodeURIComponent(`Hi ${request.firmName}, this is the CampSend Design Team! We received your request regarding: "${request.subject}". How can we assist you with this design today?`);
     window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
   };
 

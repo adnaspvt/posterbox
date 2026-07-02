@@ -29,7 +29,7 @@ export default function LeadCapture() {
       setPhone('');
 
       // Trigger WhatsApp notification
-      const message = encodeURIComponent('Hi! Thanks for signing up to PosterBox. Unlock 20% OFF your first template purchase. Reply with "YES" to activate your discount! 🎁');
+      const message = encodeURIComponent('Hi! Thanks for signing up to CampSend. Unlock 20% OFF your first template purchase. Reply with "YES" to activate your discount! 🎁');
       const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${message}`;
       window.open(whatsappUrl, '_blank');
     } catch (error) {

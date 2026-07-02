@@ -105,7 +105,7 @@ function HomePage() {
   const faqs = [
     { q: "Do users need an account to generate a poster?", a: "No! Your audience can generate and download their personalized posters instantly without creating an account, ensuring maximum conversion and sharing." },
     { q: "Where are the images hosted?", a: "Background art is securely hosted in the cloud. User photos are processed dynamically on their device and are never permanently stored on our servers, ensuring complete privacy." },
-    { q: "Can I use this for political campaigns?", a: "Absolutely. PosterBox is built to scale for high-traffic events, political advocacy, and viral brand movements." }
+    { q: "Can I use this for political campaigns?", a: "Absolutely. CampSend is built to scale for high-traffic events, political advocacy, and viral brand movements." }
   ];
 
   return (
@@ -298,7 +298,7 @@ function HomePage() {
          <div className="max-w-4xl mx-auto px-6">
             <h2 className="text-3xl font-black text-white tracking-tighter mb-6">Poster<span className="text-indigo-400">Box</span></h2>
             <p className="text-sm font-medium mb-8 leading-relaxed max-w-2xl mx-auto">
-              PosterBox is a comprehensive digital marketing platform designed to generate high-converting, user-generated poster campaigns. Automate custom photo framing and drive organic social media growth today.
+              CampSend is a comprehensive digital marketing platform designed to generate high-converting, user-generated poster campaigns. Automate custom photo framing and drive organic social media growth today.
             </p>
             <div className="flex justify-center gap-6 mb-8 text-sm font-bold text-slate-500">
               <span className="hover:text-white cursor-pointer">Privacy Policy</span>
@@ -306,7 +306,7 @@ function HomePage() {
               <span className="hover:text-white cursor-pointer">Contact Us</span>
             </div>
             <p onClick={handleSecretClick} className="text-xs font-bold tracking-widest uppercase cursor-pointer select-none text-slate-600 hover:text-slate-500 transition">
-               © {new Date().getFullYear()} PosterBox Platform. All Rights Reserved.
+               © {new Date().getFullYear()} CampSend Platform. All Rights Reserved.
             </p>
          </div>
       </footer>
@@ -337,7 +337,7 @@ function AuthPage() {
       await setDoc(doc(db, "users", user.uid), {
         firmName: user.displayName || "Google User", email: user.email, createdAt: serverTimestamp()
       }, { merge: true });
-      toast.success('Welcome to PosterBox!', { duration: 3000 });
+      toast.success('Welcome to CampSend!', { duration: 3000 });
       
       // 🚀 Pass the query params to the Dashboard so it knows to clone the template
       navigate('/dashboard' + queryParams); 

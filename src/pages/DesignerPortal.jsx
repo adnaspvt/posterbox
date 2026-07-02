@@ -6,6 +6,7 @@ import { auth, db, IMGBB_API_KEY, googleProvider } from '../config/firebase';
 import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 import ProEditor from '../components/ProEditor';
+import NotificationBell from '../components/NotificationBell';
 
 function DesignerPortal() {
   const navigate = useNavigate();
@@ -426,7 +427,7 @@ function DesignerPortal() {
             <div className="text-center mb-8">
               <span className="text-5xl mb-4 block">🎨</span>
               <h1 className="text-2xl font-black text-white">Apply to Become a Designer</h1>
-              <p className="text-slate-400 text-sm mt-2">You are signed in with your existing PosterBox account.</p>
+              <p className="text-slate-400 text-sm mt-2">You are signed in with your existing CampSend account.</p>
             </div>
             <form onSubmit={handleSignup} className="space-y-4 mb-6">
               <input
@@ -658,6 +659,7 @@ function DesignerPortal() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <NotificationBell userId={currentUser?.uid} />
             <button
               onClick={() => navigate('/dashboard')}
               className="bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/30 font-bold px-4 py-2 rounded-lg transition mr-2"

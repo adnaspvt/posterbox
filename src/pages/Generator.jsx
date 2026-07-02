@@ -316,7 +316,7 @@ function Generator() {
         ctx.textBaseline = 'bottom';
         ctx.shadowColor = 'rgba(0,0,0,0.8)';
         ctx.shadowBlur = 6 * SCALE;
-        ctx.fillText('Made with PosterBox ✨', canvas.width - (16 * SCALE), canvas.height - (16 * SCALE));
+        ctx.fillText('Made with CampSend ✨', canvas.width - (16 * SCALE), canvas.height - (16 * SCALE));
         ctx.restore();
       }
       
@@ -452,7 +452,7 @@ function Generator() {
               Just Download Image
             </button>
 
-            <p className="text-center text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Powered by PosterBox</p>
+            <p className="text-center text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Powered by CampSend</p>
           </div>
         </div>
       </div>

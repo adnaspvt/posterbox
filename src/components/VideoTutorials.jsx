@@ -48,7 +48,7 @@ export default function VideoTutorials() {
     <section className="py-24 bg-white border-t border-slate-200">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-black text-slate-900 mb-3">Learn & Master PosterBox 🎓</h2>
+          <h2 className="text-4xl font-black text-slate-900 mb-3">Learn & Master CampSend 🎓</h2>
           <p className="text-slate-600 font-medium">Video tutorials by experts. Everything you need to succeed.</p>
         </div>
 

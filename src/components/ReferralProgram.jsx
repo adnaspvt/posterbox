@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 export default function ReferralProgram() {
   const [copied, setCopied] = useState(false);
 
-  const referralLink = `https://posterbox1.web.app?ref=${typeof window !== 'undefined' ? 'POSTERBOX_' + Math.random().toString(36).substring(7).toUpperCase() : 'POSTERBOX'}`;
+  const referralLink = `https://CampSend1.web.app?ref=${typeof window !== 'undefined' ? 'CampSend_' + Math.random().toString(36).substring(7).toUpperCase() : 'CampSend'}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(referralLink);
@@ -14,7 +14,7 @@ export default function ReferralProgram() {
   };
 
   const handleShare = (platform) => {
-    const message = `I'm earning money referring people to PosterBox! 🚀 Create viral campaigns and get paid. Join here: ${referralLink}`;
+    const message = `I'm earning money referring people to CampSend! 🚀 Create viral campaigns and get paid. Join here: ${referralLink}`;
     const encodedMessage = encodeURIComponent(message);
 
     const links = {
@@ -33,7 +33,7 @@ export default function ReferralProgram() {
           {/* Left: Program Benefits */}
           <div>
             <h2 className="text-4xl font-black text-slate-900 mb-6">Earn While You Refer 💰</h2>
-            <p className="text-slate-600 font-medium mb-8">Share PosterBox with your network and get rewarded instantly. No caps. No limits.</p>
+            <p className="text-slate-600 font-medium mb-8">Share CampSend with your network and get rewarded instantly. No caps. No limits.</p>
 
             <div className="space-y-5">
               <div className="flex gap-4">
@@ -47,7 +47,7 @@ export default function ReferralProgram() {
                 <span className="text-2xl">✅</span>
                 <div>
                   <p className="font-black text-slate-900">Lifetime Earnings</p>
-                  <p className="text-sm text-slate-600">Keep earning as long as they use PosterBox</p>
+                  <p className="text-sm text-slate-600">Keep earning as long as they use CampSend</p>
                 </div>
               </div>
               <div className="flex gap-4">

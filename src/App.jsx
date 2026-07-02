@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, collection, getDocs, query, orderBy, limit, where } from 'firebase/firestore';
 import { auth, googleProvider, db } from './config/firebase';
-import toast, { Toaster } from 'react-hot-toast'; 
+import toast, { Toaster } from 'react-hot-toast';
 
 // ==========================================
 // 🚀 ENTERPRISE LAZY LOADING
@@ -113,7 +113,7 @@ function HomePage() {
       {/* SMART STICKY HEADER */}
       <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="text-2xl font-black text-indigo-600 tracking-tighter cursor-pointer" onClick={() => window.scrollTo(0,0)}>
+          <div className="text-2xl font-black text-indigo-600 tracking-tighter cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
             Camp<span className="text-slate-800">Send</span>
           </div>
           <div className="flex items-center gap-3">
@@ -134,7 +134,7 @@ function HomePage() {
             🚀 The #1 Platform for User-Generated Campaigns
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-slate-900 leading-tight">
-              Scale Your <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-purple-600">Viral Message</span>
+            Scale Your <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-purple-600">Viral Message</span>
           </h1>
           <h2 className="text-xl md:text-2xl text-slate-600 max-w-3xl mx-auto mb-10 font-medium leading-relaxed">
             Empower local people with a mobile-first custom poster maker. Automate photo framing, track your reach, and drive massive awareness through instant WhatsApp sharing right from any smartphone.
@@ -149,7 +149,7 @@ function HomePage() {
         {/* LIVE CAMPAIGNS GALLERY */}
         <section className="bg-white border-y border-slate-200 py-20 relative overflow-hidden">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-indigo-50 rounded-full blur-3xl -z-10 opacity-50"></div>
-          
+
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800">Trending Community Campaigns</h2>
@@ -207,17 +207,17 @@ function HomePage() {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {platformTemplates.map(template => (
-                  <div 
-                    key={template.id} 
+                  <div
+                    key={template.id}
                     onClick={() => {
                       // 🚀 THE FIX: Pass the template ID securely to the Auth route
                       toast('Taking you to the Studio...', { icon: '✨' });
                       navigate(`/auth?template=${template.id}`);
-                    }} 
+                    }}
                     className="bg-white border border-slate-200 rounded-2xl p-3 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col"
                   >
                     <div className="aspect-3/4 bg-slate-100 rounded-xl mb-3 overflow-hidden relative">
-                      <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url(${template.backgroundImage})`}}></div>
+                      <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url(${template.backgroundImage})` }}></div>
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 backdrop-blur-[2px]">
                         <span className="bg-white text-indigo-600 font-bold text-sm px-4 py-2 rounded-lg shadow-lg">Use Template</span>
                       </div>
@@ -227,7 +227,7 @@ function HomePage() {
                 ))}
               </div>
             )}
-            
+
             <div className="text-center mt-12">
               <button onClick={() => navigate('/auth')} className="bg-white border border-slate-300 text-slate-700 px-8 py-3 rounded-xl font-bold hover:bg-slate-100 transition shadow-sm">
                 View All Templates
@@ -243,8 +243,8 @@ function HomePage() {
             <div className="space-y-4">
               {faqs.map((faq, idx) => (
                 <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden transition-all duration-300">
-                  <button 
-                    onClick={() => setActiveFaq(activeFaq === idx ? null : idx)} 
+                  <button
+                    onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
                     className="w-full flex justify-between items-center p-6 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
                   >
                     <span className="font-bold text-slate-800 text-lg">{faq.q}</span>
@@ -295,20 +295,20 @@ function HomePage() {
 
       {/* SEO FOOTER */}
       <footer className="bg-slate-900 text-slate-400 py-16 text-center">
-         <div className="max-w-4xl mx-auto px-6">
-            <h2 className="text-3xl font-black text-white tracking-tighter mb-6">Camp<span className="text-indigo-400">Send</span></h2>
-            <p className="text-sm font-medium mb-8 leading-relaxed max-w-2xl mx-auto">
-              CampSend is a comprehensive digital marketing platform designed to generate high-converting, user-generated poster campaigns. Automate custom photo framing and drive organic social media growth today.
-            </p>
-            <div className="flex justify-center gap-6 mb-8 text-sm font-bold text-slate-500">
-              <span className="hover:text-white cursor-pointer">Privacy Policy</span>
-              <span className="hover:text-white cursor-pointer">Terms of Service</span>
-              <span className="hover:text-white cursor-pointer">Contact Us</span>
-            </div>
-            <p onClick={handleSecretClick} className="text-xs font-bold tracking-widest uppercase cursor-pointer select-none text-slate-600 hover:text-slate-500 transition">
-               © {new Date().getFullYear()} CampSend Platform. All Rights Reserved.
-            </p>
-         </div>
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-3xl font-black text-white tracking-tighter mb-6">Camp<span className="text-indigo-400">Send</span></h2>
+          <p className="text-sm font-medium mb-8 leading-relaxed max-w-2xl mx-auto">
+            CampSend is a comprehensive digital marketing platform designed to generate high-converting, user-generated poster campaigns. Automate custom photo framing and drive organic social media growth today.
+          </p>
+          <div className="flex justify-center gap-6 mb-8 text-sm font-bold text-slate-500">
+            <span className="hover:text-white cursor-pointer">Privacy Policy</span>
+            <span className="hover:text-white cursor-pointer">Terms of Service</span>
+            <span className="hover:text-white cursor-pointer">Contact Us</span>
+          </div>
+          <p onClick={handleSecretClick} className="text-xs font-bold tracking-widest uppercase cursor-pointer select-none text-slate-600 hover:text-slate-500 transition">
+            © {new Date().getFullYear()} CampSend Platform. All Rights Reserved.
+          </p>
+        </div>
       </footer>
     </div>
   );
@@ -320,31 +320,31 @@ function HomePage() {
 function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation(); // 🚀 Captures the ?template=123 from the URL
-  const queryParams = location.search; 
+  const queryParams = location.search;
 
   const [isLoginMode, setIsLoginMode] = useState(true);
-  
+
   const [firmName, setFirmName] = useState('');
-  const [phone, setPhone] = useState(''); 
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
   const handleGoogleAuth = async () => {
     setAuthLoading(true);
-    try { 
-      const { user } = await signInWithPopup(auth, googleProvider); 
+    try {
+      const { user } = await signInWithPopup(auth, googleProvider);
       await setDoc(doc(db, "users", user.uid), {
         firmName: user.displayName || "Google User", email: user.email, createdAt: serverTimestamp()
       }, { merge: true });
       toast.success('Welcome to CampSend!', { duration: 3000 });
-      
+
       // 🚀 Pass the query params to the Dashboard so it knows to clone the template
-      navigate('/dashboard' + queryParams); 
-    } 
-    catch (error) { 
+      navigate('/dashboard' + queryParams);
+    }
+    catch (error) {
       console.error("Google Auth Error:", error);
-      toast.error("Google sign-in failed: " + error.message); 
+      toast.error("Google sign-in failed: " + error.message);
     }
     finally { setAuthLoading(false); }
   };
@@ -353,7 +353,7 @@ function AuthPage() {
     e.preventDefault();
     if (isLoginMode && (!email || !password)) return toast.error("Please fill in your email and password.");
     if (!isLoginMode && (!firmName || !phone || !email || !password)) return toast.error("Please fill in all fields.");
-    
+
     setAuthLoading(true);
     const toastId = toast.loading('Authenticating...');
 
@@ -364,21 +364,21 @@ function AuthPage() {
       } else {
         const { user } = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(user, { displayName: firmName });
-        
+
         await setDoc(doc(db, "users", user.uid), {
-          firmName: firmName, 
-          email: email, 
-          phone: phone, 
-          role: "client", 
+          firmName: firmName,
+          email: email,
+          phone: phone,
+          role: "client",
           createdAt: serverTimestamp()
         });
         toast.success('Account created successfully!', { id: toastId });
       }
-      
+
       // 🚀 Pass the query params to the Dashboard 
-      navigate('/dashboard' + queryParams); 
-    } 
-    catch (error) { 
+      navigate('/dashboard' + queryParams);
+    }
+    catch (error) {
       let errorMessage = "Authentication failed. Check your details.";
       if (error.code === 'auth/email-already-in-use') errorMessage = "This email is already registered.";
       else if (error.code === 'auth/weak-password') errorMessage = "Password must be at least 6 characters.";
@@ -386,7 +386,7 @@ function AuthPage() {
       else if (error.code === 'auth/invalid-email') errorMessage = "Please enter a valid email address.";
 
       toast.error(errorMessage, { id: toastId });
-    } 
+    }
     finally { setAuthLoading(false); }
   };
 
@@ -410,20 +410,20 @@ function AuthPage() {
           <h2 className="text-3xl font-black text-slate-800">{isLoginMode ? "Welcome Back" : "Register Firm"}</h2>
           <button onClick={() => navigate('/')} className="text-slate-400 font-bold hover:text-slate-800 transition bg-slate-50 w-10 h-10 rounded-full flex items-center justify-center">✕</button>
         </div>
-        
+
         <button onClick={handleGoogleAuth} disabled={authLoading} className="w-full bg-white border-2 border-slate-200 text-slate-700 font-bold text-lg py-4 rounded-xl flex flex-row items-center justify-center gap-3 hover:bg-slate-50 hover:border-slate-300 transition-all mb-8 disabled:opacity-50 active:scale-95">
-          <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>
           Continue with Google
         </button>
-        
+
         <div className="flex items-center gap-4 mb-8"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-xs font-black uppercase tracking-widest">OR EMAIL</span><div className="h-px bg-slate-200 flex-1"></div></div>
-        
+
         <form onSubmit={handleEmailAuth} className="flex flex-col gap-4">
           {!isLoginMode && (
-             <div className="animate-in fade-in slide-in-from-top-2 duration-300 flex flex-col gap-4">
-               <input type="text" placeholder="Firm / Organization Name" value={firmName} onChange={(e) => setFirmName(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 transition-all" />
-               <input type="tel" placeholder="WhatsApp / Mobile Number (e.g. +91...)" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 transition-all" />
-             </div>
+            <div className="animate-in fade-in slide-in-from-top-2 duration-300 flex flex-col gap-4">
+              <input type="text" placeholder="Firm / Organization Name" value={firmName} onChange={(e) => setFirmName(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 transition-all" />
+              <input type="tel" placeholder="WhatsApp / Mobile Number (e.g. +91...)" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 transition-all" />
+            </div>
           )}
           <input type="email" placeholder="Organization Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all" />
           <input type="password" placeholder="Password (Min 6 chars)" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all" />
@@ -431,14 +431,14 @@ function AuthPage() {
             <button type="button" onClick={handlePasswordReset} className="text-sm text-indigo-600 hover:underline">Forgot password?</button>
             <div />
           </div>
-          
+
           <button type="submit" disabled={authLoading} className="w-full bg-indigo-600 text-white font-bold text-lg py-4 rounded-xl mt-4 shadow-[0_8px_30px_rgb(79,70,229,0.3)] hover:bg-indigo-700 hover:-translate-y-1 disabled:opacity-70 disabled:translate-y-0 transition-all active:scale-95">
             {authLoading ? "Processing..." : (isLoginMode ? "Enter Dashboard" : "Register Account")}
           </button>
         </form>
-        
+
         <p className="text-center mt-8 text-slate-500 font-medium">
-          {isLoginMode ? "Is your firm new here?" : "Already have a firm account?"} 
+          {isLoginMode ? "Is your firm new here?" : "Already have a firm account?"}
           <button type="button" onClick={() => { setIsLoginMode(!isLoginMode); setFirmName(''); setPhone(''); }} className="text-indigo-600 font-black hover:underline ml-2">
             {isLoginMode ? "Register" : "Log In"}
           </button>

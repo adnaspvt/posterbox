@@ -24,7 +24,10 @@ function DesignerPortal() {
     email: '',
     password: '',
     specialty: 'General Graphics',
-    portfolio: ''
+    portfolio: '',
+    whatsapp: '',
+    behanceLink: '',
+    socialLink: ''
   });
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
@@ -196,6 +199,49 @@ function DesignerPortal() {
     }
   };
 
+  const handleUploadFinalDesign = async (reqId, file) => {
+    if (!file) return;
+    const toastId = toast.loading('Uploading final design...');
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success) {
+        await updateDoc(doc(db, 'designRequests', reqId), {
+          status: 'completed',
+          finalDesignUrl: data.data.url
+        });
+        toast.success('Final design delivered successfully!', { id: toastId });
+      } else {
+        toast.error('Failed to upload image to ImgBB.', { id: toastId });
+      }
+    } catch (e) {
+      toast.error('Error delivering design.', { id: toastId });
+    }
+  };
+
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const handleUpdateDesignerProfile = async (e) => {
+    e.preventDefault();
+    setIsUpdatingProfile(true);
+    const toastId = toast.loading('Saving profile changes...');
+    try {
+      await updateDoc(doc(db, 'users', designer.uid), {
+        whatsapp: designer.whatsapp || '',
+        behanceLink: designer.behanceLink || '',
+        socialLink: designer.socialLink || '',
+        portfolio: designer.portfolio || ''
+      });
+      toast.success('Profile updated successfully!', { id: toastId });
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to update profile.', { id: toastId });
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
   // ==========================================
   // AUTHENTICATION
   // ==========================================
@@ -233,7 +279,10 @@ function DesignerPortal() {
         designerReviews: 0,
         designerStatus: 'pending',
         earnings: 0,
-        templatesCreated: 0
+        templatesCreated: 0,
+        whatsapp: signupData.whatsapp,
+        behanceLink: signupData.behanceLink,
+        socialLink: signupData.socialLink
       };
 
       await setDoc(userRef, designerPayload, { merge: true });
@@ -432,6 +481,34 @@ function DesignerPortal() {
             <form onSubmit={handleSignup} className="space-y-4 mb-6">
               <input
                 type="text"
+                placeholder="Portfolio Link"
+                value={signupData.portfolio}
+                onChange={(e) => setSignupData({ ...signupData, portfolio: e.target.value })}
+                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm mb-3"
+              />
+              <input
+                type="tel"
+                placeholder="WhatsApp Number"
+                value={signupData.whatsapp}
+                onChange={(e) => setSignupData({ ...signupData, whatsapp: e.target.value })}
+                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm mb-3"
+              />
+              <input
+                type="url"
+                placeholder="Behance Link"
+                value={signupData.behanceLink}
+                onChange={(e) => setSignupData({ ...signupData, behanceLink: e.target.value })}
+                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm mb-3"
+              />
+              <input
+                type="url"
+                placeholder="Social / Instagram Link"
+                value={signupData.socialLink}
+                onChange={(e) => setSignupData({ ...signupData, socialLink: e.target.value })}
+                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm mb-6"
+              />
+              <input
+                type="text"
                 placeholder="Your Full Name"
                 value={signupData.name}
                 onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
@@ -570,6 +647,30 @@ function DesignerPortal() {
                     placeholder="Password (min 6 chars)"
                     value={signupData.password}
                     onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    disabled={isAuthenticating}
+                  />
+                  <input
+                    type="tel"
+                    placeholder="WhatsApp Number (e.g. +91 9876543210)"
+                    value={signupData.whatsapp}
+                    onChange={(e) => setSignupData({ ...signupData, whatsapp: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    disabled={isAuthenticating}
+                  />
+                  <input
+                    type="url"
+                    placeholder="Behance Portfolio Link (Optional)"
+                    value={signupData.behanceLink}
+                    onChange={(e) => setSignupData({ ...signupData, behanceLink: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    disabled={isAuthenticating}
+                  />
+                  <input
+                    type="url"
+                    placeholder="Instagram / Social Link (Optional)"
+                    value={signupData.socialLink}
+                    onChange={(e) => setSignupData({ ...signupData, socialLink: e.target.value })}
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                     disabled={isAuthenticating}
                   />
@@ -717,8 +818,8 @@ function DesignerPortal() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`px-6 py-3 font-bold transition ${activeTab === tab.id
-                  ? 'text-indigo-400 border-b-2 border-indigo-400'
-                  : 'text-slate-400 hover:text-slate-300'
+                ? 'text-indigo-400 border-b-2 border-indigo-400'
+                : 'text-slate-400 hover:text-slate-300'
                 }`}
             >
               {tab.label}
@@ -749,19 +850,47 @@ function DesignerPortal() {
                       </div>
                       <span className={`text-[10px] font-black uppercase px-3 py-1 rounded border ${req.status === 'completed' ? 'bg-indigo-900/30 text-indigo-400 border-indigo-700/50' : req.status === 'accepted' ? 'bg-emerald-900/30 text-emerald-400 border-emerald-700/50' : 'bg-yellow-900/30 text-yellow-400 border-yellow-700/50'}`}>{req.status}</span>
                     </div>
-                    <div className="bg-slate-900 rounded-xl p-4 mb-6 border border-slate-700 flex-1">
-                      <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">{req.details}</p>
+                    <div className="bg-slate-900 rounded-xl p-4 mb-6 border border-slate-700 flex-1 flex flex-col">
+                      <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed mb-4">{req.details}</p>
+                      {req.mediaUrl && (
+                        <div className="mt-auto border-t border-slate-700 pt-4">
+                          <p className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-widest">Client Reference Media</p>
+                          <a href={req.mediaUrl} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3 bg-slate-800 rounded-lg hover:bg-slate-700 transition border border-slate-700">
+                            <img src={req.mediaUrl} alt="Reference" className="w-12 h-12 rounded object-cover" />
+                            <div>
+                              <p className="text-sm font-bold text-indigo-400 hover:underline">View Full Image ↗</p>
+                            </div>
+                          </a>
+                        </div>
+                      )}
+                      {req.finalDesignUrl && (
+                        <div className="mt-auto border-t border-slate-700 pt-4">
+                          <p className="text-xs font-bold text-emerald-500 mb-2 uppercase tracking-widest">Delivered Design</p>
+                          <a href={req.finalDesignUrl} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3 bg-emerald-900/20 rounded-lg border border-emerald-800/50 hover:bg-emerald-900/30 transition">
+                            <img src={req.finalDesignUrl} alt="Final Delivery" className="w-12 h-12 rounded object-cover" />
+                            <div>
+                              <p className="text-sm font-bold text-emerald-400 hover:underline">View Delivery ↗</p>
+                            </div>
+                          </a>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-auto">
+                    <div className="flex flex-col gap-2 mt-auto">
                       {req.status === 'pending' && (
-                        <>
-                          <button onClick={() => updateDoc(doc(db, 'designRequests', req.id), { status: 'accepted' })} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg transition text-sm">Accept Job</button>
-                        </>
+                        <button onClick={() => updateDoc(doc(db, 'designRequests', req.id), { status: 'accepted' })} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg transition text-sm">Accept Job</button>
                       )}
                       {req.status === 'accepted' && (
                         <>
-                          <button onClick={() => window.open(`mailto:${req.clientEmail}?subject=RE: ${req.subject}`)} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg transition text-sm">Email Client</button>
-                          <button onClick={() => updateDoc(doc(db, 'designRequests', req.id), { status: 'completed' })} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-lg transition text-sm">Mark Completed</button>
+                          <div className="flex gap-2">
+                            <button onClick={() => window.open(`mailto:${req.clientEmail}?subject=RE: ${req.subject}`)} className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg transition text-sm">Email</button>
+                            {req.clientPhone && req.clientPhone !== 'Not Provided' && (
+                              <button onClick={() => window.open(`https://wa.me/${req.clientPhone.replace(/[^0-9]/g, '')}?text=Hi! I am the designer from CampSend regarding your request: ${req.subject}`, '_blank')} className="flex-1 bg-[#25D366] hover:bg-[#1DA851] text-white font-bold py-2 rounded-lg transition text-sm flex items-center justify-center gap-1"><svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg> WhatsApp</button>
+                            )}
+                          </div>
+                          <div className="relative overflow-hidden group rounded-lg">
+                            <input type="file" accept="image/*" onChange={(e) => handleUploadFinalDesign(req.id, e.target.files[0])} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                            <button className="w-full bg-slate-700 group-hover:bg-slate-600 text-white font-bold py-2 rounded-lg transition text-sm">Upload Final Design to Complete</button>
+                          </div>
                         </>
                       )}
                       {req.status === 'completed' && (
@@ -949,7 +1078,7 @@ function DesignerPortal() {
           <div>
             <h2 className="text-2xl font-black text-white mb-6">Designer Profile</h2>
             <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700 max-w-2xl">
-              <div className="space-y-6">
+              <form onSubmit={handleUpdateDesignerProfile} className="space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-slate-300 mb-2">Name</label>
                   <p className="text-white font-bold text-lg flex items-center gap-2">
@@ -962,20 +1091,25 @@ function DesignerPortal() {
                   <p className="text-slate-400 font-medium">{designer?.email}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-300 mb-2">Specialty</label>
-                  <p className="text-slate-400 font-medium">{designer?.specialty}</p>
+                  <label className="block text-sm font-bold text-slate-300 mb-2">WhatsApp Number</label>
+                  <input type="tel" value={designer?.whatsapp || ''} onChange={(e) => setDesigner({ ...designer, whatsapp: e.target.value })} className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="e.g. +1234567890" />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-300 mb-2">Rating</label>
-                  <p className="text-yellow-400 font-bold text-lg">⭐ {(designer?.rating || 5).toFixed(1)}</p>
+                  <label className="block text-sm font-bold text-slate-300 mb-2">Main Portfolio Link</label>
+                  <input type="url" value={designer?.portfolio || ''} onChange={(e) => setDesigner({ ...designer, portfolio: e.target.value })} className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="https://..." />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-300 mb-2">Account Status</label>
-                  <div className="inline-block bg-emerald-500/20 text-emerald-400 px-4 py-2 rounded-lg font-bold text-sm">
-                    ✅ Active
-                  </div>
+                  <label className="block text-sm font-bold text-slate-300 mb-2">Behance Profile</label>
+                  <input type="url" value={designer?.behanceLink || ''} onChange={(e) => setDesigner({ ...designer, behanceLink: e.target.value })} className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="https://behance.net/..." />
                 </div>
-              </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-300 mb-2">Social Link (Instagram/Twitter)</label>
+                  <input type="url" value={designer?.socialLink || ''} onChange={(e) => setDesigner({ ...designer, socialLink: e.target.value })} className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="https://instagram.com/..." />
+                </div>
+                <button type="submit" disabled={isUpdatingProfile} className="mt-4 bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-indigo-700 transition disabled:opacity-50">
+                  {isUpdatingProfile ? 'Saving...' : 'Save Profile Changes'}
+                </button>
+              </form>
             </div>
           </div>
         )}

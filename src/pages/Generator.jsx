@@ -392,9 +392,9 @@ function Generator() {
       <header className="bg-white border-b border-slate-200 py-4 px-6 flex justify-between items-center shadow-sm z-10 relative">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-600/30">
-            <span className="text-white font-black text-lg leading-none">P</span>
+            <span className="text-white font-black text-lg leading-none">C</span>
           </div>
-          <div className="text-xl font-black text-slate-800 tracking-tight">Poster<span className="text-indigo-600">Box</span></div>
+          <div className="text-xl font-black text-slate-800 tracking-tight">Camp<span className="text-indigo-600">Send</span></div>
         </div>
         <div className="text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-lg">Public Generator</div>
       </header>

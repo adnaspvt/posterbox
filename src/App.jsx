@@ -114,7 +114,7 @@ function HomePage() {
       <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="text-2xl font-black text-indigo-600 tracking-tighter cursor-pointer" onClick={() => window.scrollTo(0,0)}>
-            Poster<span className="text-slate-800">Box</span>
+            Camp<span className="text-slate-800">Send</span>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => navigate('/auth')} className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg hover:-translate-y-0.5 active:scale-95">
@@ -137,7 +137,7 @@ function HomePage() {
               Scale Your <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-purple-600">Viral Message</span>
           </h1>
           <h2 className="text-xl md:text-2xl text-slate-600 max-w-3xl mx-auto mb-10 font-medium leading-relaxed">
-            Empower your community with a custom poster maker. Automate photo framing, track your reach, and drive massive awareness through one-click social sharing.
+            Empower local people with a mobile-first custom poster maker. Automate photo framing, track your reach, and drive massive awareness through instant WhatsApp sharing right from any smartphone.
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button onClick={() => navigate('/auth')} className="w-full sm:w-auto bg-indigo-600 text-white font-black text-xl py-4 px-12 rounded-xl shadow-[0_8px_30px_rgb(79,70,229,0.3)] hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95">
@@ -296,7 +296,7 @@ function HomePage() {
       {/* SEO FOOTER */}
       <footer className="bg-slate-900 text-slate-400 py-16 text-center">
          <div className="max-w-4xl mx-auto px-6">
-            <h2 className="text-3xl font-black text-white tracking-tighter mb-6">Poster<span className="text-indigo-400">Box</span></h2>
+            <h2 className="text-3xl font-black text-white tracking-tighter mb-6">Camp<span className="text-indigo-400">Send</span></h2>
             <p className="text-sm font-medium mb-8 leading-relaxed max-w-2xl mx-auto">
               CampSend is a comprehensive digital marketing platform designed to generate high-converting, user-generated poster campaigns. Automate custom photo framing and drive organic social media growth today.
             </p>

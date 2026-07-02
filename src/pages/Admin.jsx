@@ -389,7 +389,7 @@ function Admin() {
 
       {/* SIDEBAR */}
       <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 z-50">
-        <div className="p-6 border-b border-slate-800"><div className="text-2xl font-black text-white tracking-tighter uppercase"><span className="text-emerald-500">P-Box</span> // Admin</div></div>
+        <div className="p-6 border-b border-slate-800"><div className="text-2xl font-black text-white tracking-tighter uppercase"><span className="text-emerald-500">C-Send</span> // Admin</div></div>
         <nav className="flex-1 p-4 flex flex-col gap-2 font-mono text-sm overflow-y-auto">
           <button onClick={() => setActiveTab('overview')} className={`text-left px-4 py-3 rounded-lg font-bold transition-colors ${activeTab === 'overview' ? 'bg-emerald-950/50 text-emerald-400 border border-emerald-900/50' : 'text-slate-500 hover:bg-slate-800'}`}>[1] Overview</button>
           <button onClick={() => setActiveTab('templates')} className={`text-left px-4 py-3 rounded-lg font-bold transition-colors ${activeTab === 'templates' ? 'bg-emerald-950/50 text-emerald-400 border border-emerald-900/50' : 'text-slate-500 hover:bg-slate-800'}`}>[2] Template Studio ✦</button>

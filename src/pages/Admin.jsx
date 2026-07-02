@@ -4,7 +4,7 @@ import { signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordRe
 import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc, serverTimestamp, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db, IMGBB_API_KEY, googleProvider } from '../config/firebase';
 import toast from 'react-hot-toast';
-import { Rnd } from 'react-rnd'; 
+import { Rnd } from 'react-rnd';
 import imageCompression from 'browser-image-compression';
 
 
@@ -17,24 +17,24 @@ const FONT_FAMILIES = [
 
 function Admin() {
   const navigate = useNavigate();
-  const MASTER_EMAIL = "adnaspvtltd@gmail.com"; 
+  const MASTER_EMAIL = "adnaspvtltd@gmail.com";
 
   // --- STATE ---
-  const [authStatus, setAuthStatus] = useState('loading'); 
+  const [authStatus, setAuthStatus] = useState('loading');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  const [activeTab, setActiveTab] = useState('overview'); 
+  const [activeTab, setActiveTab] = useState('overview');
   const [allCampaigns, setAllCampaigns] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
-  const [allTemplates, setAllTemplates] = useState([]); 
-  const [designRequests, setDesignRequests] = useState([]); 
+  const [allTemplates, setAllTemplates] = useState([]);
+  const [designRequests, setDesignRequests] = useState([]);
   const [payoutRequests, setPayoutRequests] = useState([]);
   const [isFetchingData, setIsFetchingData] = useState(false);
 
   // --- PLATFORM SETTINGS STATE ---
-  const [whatsappNumber, setWhatsappNumber] = useState(''); 
+  const [whatsappNumber, setWhatsappNumber] = useState('');
 
   // --- TEMPLATE STUDIO STATE ---
   const [templateTitle, setTemplateTitle] = useState('');
@@ -43,7 +43,7 @@ function Admin() {
   const [templateElements, setTemplateElements] = useState([]);
   const [templateSelectedId, setTemplateSelectedId] = useState(null);
   const [isSavingTemplate, setIsSavingTemplate] = useState(false);
-  
+
   const [templateCanvasWidth, setTemplateCanvasWidth] = useState(800);
   const [templateCanvasHeight, setTemplateCanvasHeight] = useState(1066);
 
@@ -66,32 +66,32 @@ function Admin() {
 
   const handleMasterLogin = async (e) => {
     e.preventDefault();
-    if (loginEmail !== MASTER_EMAIL) return toast.error("ACCESS DENIED.", { style: { background: '#7f1d1d', color: '#fff' }});
+    if (loginEmail !== MASTER_EMAIL) return toast.error("ACCESS DENIED.", { style: { background: '#7f1d1d', color: '#fff' } });
     setIsAuthenticating(true);
-    const toastId = toast.loading('Verifying...', { style: { background: '#020617', color: '#10b981' }});
+    const toastId = toast.loading('Verifying...', { style: { background: '#020617', color: '#10b981' } });
     try {
       await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
-      toast.success('System Unlocked.', { id: toastId, style: { background: '#020617', color: '#10b981' }});
+      toast.success('System Unlocked.', { id: toastId, style: { background: '#020617', color: '#10b981' } });
     } catch (error) {
       const msg = error.code === 'auth/wrong-password' ? 'Invalid Password.' : (error.message || 'Authentication failed.');
-      toast.error(msg, { id: toastId, style: { background: '#7f1d1d', color: '#fff' }});
-    } 
+      toast.error(msg, { id: toastId, style: { background: '#7f1d1d', color: '#fff' } });
+    }
     finally { setIsAuthenticating(false); }
   };
 
   const handleGoogleLogin = async () => {
     setIsAuthenticating(true);
-    const toastId = toast.loading('Verifying Google Account...', { style: { background: '#020617', color: '#10b981' }});
+    const toastId = toast.loading('Verifying Google Account...', { style: { background: '#020617', color: '#10b981' } });
     try {
       const result = await signInWithPopup(auth, googleProvider);
       if (result.user.email !== MASTER_EMAIL) {
         await signOut(auth);
-        toast.error("ACCESS DENIED. Unauthorized Google Account.", { id: toastId, style: { background: '#7f1d1d', color: '#fff' }});
+        toast.error("ACCESS DENIED. Unauthorized Google Account.", { id: toastId, style: { background: '#7f1d1d', color: '#fff' } });
       } else {
-        toast.success('System Unlocked via Google.', { id: toastId, style: { background: '#020617', color: '#10b981' }});
+        toast.success('System Unlocked via Google.', { id: toastId, style: { background: '#020617', color: '#10b981' } });
       }
     } catch (error) {
-      toast.error(error.message || 'Google Sign In failed.', { id: toastId, style: { background: '#7f1d1d', color: '#fff' }});
+      toast.error(error.message || 'Google Sign In failed.', { id: toastId, style: { background: '#7f1d1d', color: '#fff' } });
     } finally {
       setIsAuthenticating(false);
     }
@@ -99,7 +99,7 @@ function Admin() {
 
   const handleMasterLogout = async () => {
     await signOut(auth); navigate('/');
-    toast('System Locked.', { icon: '🔒', style: { background: '#020617', color: '#fff' }});
+    toast('System Locked.', { icon: '🔒', style: { background: '#020617', color: '#fff' } });
   };
 
   const fetchAllData = async () => {
@@ -123,7 +123,7 @@ function Admin() {
       const configDoc = await getDoc(doc(db, "settings", "platform"));
       if (configDoc.exists()) setWhatsappNumber(configDoc.data().whatsappNumber || '');
 
-    } catch (error) { toast.error("Database sync failed."); } 
+    } catch (error) { toast.error("Database sync failed."); }
     finally { setIsFetchingData(false); }
   };
 
@@ -151,11 +151,11 @@ function Admin() {
   };
 
   const handleApprovePayout = async (request) => {
-    if(!window.confirm(`Mark ₹${request.amount} as PAID to ${request.designerName}?`)) return;
+    if (!window.confirm(`Mark ₹${request.amount} as PAID to ${request.designerName}?`)) return;
     try {
       // 1. Update the payout request status
       await updateDoc(doc(db, "payoutRequests", request.id), { status: 'paid', paidAt: serverTimestamp() });
-      
+
       // 2. Increment the designer's paidOut field
       const userDoc = await getDoc(doc(db, "users", request.designerId));
       if (userDoc.exists()) {
@@ -172,7 +172,7 @@ function Admin() {
         isRead: false,
         createdAt: serverTimestamp()
       });
-      
+
       toast.success("Payout marked as paid.");
       fetchAllData();
     } catch (error) {
@@ -242,7 +242,7 @@ function Admin() {
   // PRO STUDIO TOOLS (Admin Template Creation)
   // ==========================================
   const getNextZIndex = () => templateElements.length > 0 ? Math.max(...templateElements.map(el => el.zIndex || 1)) + 1 : 10;
-  
+
   const addTemplateText = () => setTemplateElements([...templateElements, { id: Date.now().toString(), type: 'text', x: 50, y: 50, width: 250, height: 80, text: 'Editable Text', color: '#ffffff', fontSize: 36, fontFamily: '"Montserrat", sans-serif', textAlign: 'center', opacity: 1, zIndex: getNextZIndex(), rotation: 0, isLocked: false, fontWeight: 'bold', fontStyle: 'normal', textTransform: 'none', letterSpacing: 0, lineHeight: 1.2, textStrokeWidth: 0, textStrokeColor: '#000000', shadowColor: 'rgba(0,0,0,0.5)', shadowBlur: 4, shadowOffsetX: 0, shadowOffsetY: 2 }]);
   const addTemplateShape = () => setTemplateElements([...templateElements, { id: Date.now().toString(), type: 'shape', x: 50, y: 200, width: 200, height: 100, backgroundColor: '#000000', opacity: 0.5, borderRadius: 0, zIndex: getNextZIndex(), rotation: 0, isLocked: false, borderWidth: 0, borderColor: '#ffffff', shadowColor: 'transparent', shadowBlur: 0, shadowOffsetX: 0, shadowOffsetY: 0 }]);
   const addTemplatePhoto = () => setTemplateElements([...templateElements, { id: Date.now().toString(), type: 'photo', x: 100, y: 100, width: 160, height: 160, borderRadius: 10, borderColor: '#ffffff', borderWidth: 0, opacity: 1, zIndex: getNextZIndex(), rotation: 0, isLocked: false, filterBrightness: 100, filterContrast: 100, filterSaturation: 100, filterBlur: 0 }]);
@@ -250,23 +250,23 @@ function Admin() {
   const updateTemplateElement = (id, newProps) => setTemplateElements(templateElements.map(el => (el.id === id ? { ...el, ...newProps } : el)));
   const deleteElement = (id) => { setTemplateElements(templateElements.filter(el => el.id !== id)); if (templateSelectedId === id) setTemplateSelectedId(null); };
   const duplicateElement = () => { if (!templateSelectedId) return; const el = templateElements.find(e => e.id === templateSelectedId); if (!el) return; const newId = Date.now().toString(); setTemplateElements([...templateElements, { ...el, id: newId, x: el.x + 20, y: el.y + 20, zIndex: getNextZIndex() }]); setTemplateSelectedId(newId); toast.success("Layer duplicated."); };
-  
+
   const moveLayerUp = (id) => { const el = templateElements.find(e => e.id === id); if (el) updateTemplateElement(id, { zIndex: (el.zIndex || 1) + 1 }); };
   const moveLayerDown = (id) => { const el = templateElements.find(e => e.id === id); if (el) updateTemplateElement(id, { zIndex: Math.max(1, (el.zIndex || 1) - 1) }); };
-  
+
   // 🚀 DYNAMIC IMAGE RESIZER + PRE-IMGBB COMPRESSION
-  const handleTemplateBgUpload = async (e) => { 
-    const file = e.target.files[0]; 
+  const handleTemplateBgUpload = async (e) => {
+    const file = e.target.files[0];
     if (!file) return;
-    
+
     const toastId = toast.loading('Optimizing image...');
     try {
       const options = { maxSizeMB: 1.5, maxWidthOrHeight: 2500, useWebWorker: true };
       const compressedFile = await imageCompression(file, options);
-      
-      setTemplateBgFile(compressedFile); 
+
+      setTemplateBgFile(compressedFile);
       const url = URL.createObjectURL(compressedFile);
-      setTemplateBg(url); 
+      setTemplateBg(url);
 
       const img = new Image();
       img.onload = () => { setTemplateCanvasWidth(img.naturalWidth); setTemplateCanvasHeight(img.naturalHeight); };
@@ -282,62 +282,62 @@ function Admin() {
   const saveMasterTemplate = async () => {
     if (!templateTitle) return toast.error("Template needs a title.");
     if (!templateBg && !templateBgFile) return toast.error("Template needs a background image.");
-    
-    setIsSavingTemplate(true); 
+
+    setIsSavingTemplate(true);
     const toastId = toast.loading('Deploying Master Template...');
-    
+
     try {
-      let publicImageUrl = templateBg; 
-      
+      let publicImageUrl = templateBg;
+
       if (templateBgFile) {
-        const formData = new FormData(); 
+        const formData = new FormData();
         formData.append('image', templateBgFile, 'image.jpg');
-        
+
         // ⚠️ NOTICE THE BACKTICKS HERE: ` `
-        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { 
-          method: 'POST', 
-          body: formData 
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+          method: 'POST',
+          body: formData
         });
-        
-        const data = await res.json(); 
-        
+
+        const data = await res.json();
+
         if (!data.success) {
           console.error("ImgBB Upload Failed:", data);
           throw new Error("Image hosting rejected the file.");
         }
-        
-        publicImageUrl = data.data.url; 
+
+        publicImageUrl = data.data.url;
       }
-      
-      const payload = { 
-        title: templateTitle, 
-        backgroundImage: publicImageUrl, 
-        elements: templateElements, 
-        canvasWidth: templateCanvasWidth, 
-        canvasHeight: templateCanvasHeight, 
-        createdAt: serverTimestamp() 
+
+      const payload = {
+        title: templateTitle,
+        backgroundImage: publicImageUrl,
+        elements: templateElements,
+        canvasWidth: templateCanvasWidth,
+        canvasHeight: templateCanvasHeight,
+        createdAt: serverTimestamp()
       };
-      
+
       await addDoc(collection(db, "templates"), payload);
       toast.success('Template deployed to client portal!', { id: toastId });
-      
-      setTemplateTitle(''); 
-      setTemplateBg(null); 
-      setTemplateBgFile(null); 
-      setTemplateElements([]); 
-      setTemplateCanvasWidth(800); 
+
+      setTemplateTitle('');
+      setTemplateBg(null);
+      setTemplateBgFile(null);
+      setTemplateElements([]);
+      setTemplateCanvasWidth(800);
       setTemplateCanvasHeight(1066);
       fetchAllData();
-    } catch (error) { 
+    } catch (error) {
       console.error(error);
-      toast.error("Failed to deploy to ImgBB.", { id: toastId }); 
-    } finally { 
-      setIsSavingTemplate(false); 
+      toast.error("Failed to deploy to ImgBB.", { id: toastId });
+    } finally {
+      setIsSavingTemplate(false);
     }
   };
 
-  
-  const forceDeleteTemplate = async (id) => { if (!window.confirm(`Delete this master template?`)) return; try { await deleteDoc(doc(db, "templates", id)); setAllTemplates(allTemplates.filter(t => t.id !== id)); toast.success(`Template deleted.`); } catch (e) {} };
+
+  const forceDeleteTemplate = async (id) => { if (!window.confirm(`Delete this master template?`)) return; try { await deleteDoc(doc(db, "templates", id)); setAllTemplates(allTemplates.filter(t => t.id !== id)); toast.success(`Template deleted.`); } catch (e) { } };
 
   // ==========================================
   // RENDER UI: SECURE LOCK SCREEN
@@ -358,11 +358,11 @@ function Admin() {
           </form>
 
           <div className="relative flex py-5 items-center">
-              <div className="flex-grow border-t border-slate-800"></div>
-              <span className="flex-shrink-0 mx-4 text-slate-600 text-xs uppercase tracking-widest">or</span>
-              <div className="flex-grow border-t border-slate-800"></div>
+            <div className="flex-grow border-t border-slate-800"></div>
+            <span className="flex-shrink-0 mx-4 text-slate-600 text-xs uppercase tracking-widest">or</span>
+            <div className="flex-grow border-t border-slate-800"></div>
           </div>
-          
+
           <button onClick={handleGoogleLogin} disabled={isAuthenticating} className="w-full bg-white hover:bg-gray-100 text-slate-900 font-bold py-4 rounded-lg transition-colors flex items-center justify-center gap-3">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
             Sign in with Google
@@ -386,7 +386,7 @@ function Admin() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex font-sans text-slate-300">
-      
+
       {/* SIDEBAR */}
       <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 z-50">
         <div className="p-6 border-b border-slate-800"><div className="text-2xl font-black text-white tracking-tighter uppercase"><span className="text-emerald-500">P-Box</span> // Admin</div></div>
@@ -413,7 +413,7 @@ function Admin() {
       {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
         <div className="flex-1 overflow-y-auto p-10">
-          
+
           <div className="flex justify-between items-end mb-10 border-b border-slate-800 pb-6">
             <div><h1 className="text-4xl font-black text-white tracking-tight">Command Center</h1></div>
             <button onClick={fetchAllData} disabled={isFetchingData} className="text-emerald-500 bg-emerald-950/30 border border-emerald-900/50 px-4 py-2 rounded-lg font-mono text-sm transition-colors hover:bg-emerald-900/50">↻ Refresh Data</button>
@@ -421,17 +421,17 @@ function Admin() {
 
           {/* TAB: OVERVIEW */}
           {activeTab === 'overview' && (
-             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 animate-in fade-in duration-300">
-                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800"><p className="text-xs font-mono text-slate-500 uppercase">Total Firms</p><p className="text-5xl font-black text-white mt-2">{allUsers.length}</p></div>
-                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800"><p className="text-xs font-mono text-slate-500 uppercase">Total Campaigns</p><p className="text-5xl font-black text-white mt-2">{allCampaigns.length}</p></div>
-                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800"><p className="text-xs font-mono text-slate-500 uppercase">Platform Views</p><p className="text-5xl font-black text-indigo-400 mt-2">{platformViews}</p></div>
-                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800"><p className="text-xs font-mono text-slate-500 uppercase">Total Downloads</p><p className="text-5xl font-black text-emerald-400 mt-2">{platformPosters}</p></div>
-             </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 animate-in fade-in duration-300">
+              <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800"><p className="text-xs font-mono text-slate-500 uppercase">Total Firms</p><p className="text-5xl font-black text-white mt-2">{allUsers.length}</p></div>
+              <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800"><p className="text-xs font-mono text-slate-500 uppercase">Total Campaigns</p><p className="text-5xl font-black text-white mt-2">{allCampaigns.length}</p></div>
+              <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800"><p className="text-xs font-mono text-slate-500 uppercase">Platform Views</p><p className="text-5xl font-black text-indigo-400 mt-2">{platformViews}</p></div>
+              <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800"><p className="text-xs font-mono text-slate-500 uppercase">Total Downloads</p><p className="text-5xl font-black text-emerald-400 mt-2">{platformPosters}</p></div>
+            </div>
           )}
 
           {/* TAB: FIRMS */}
           {activeTab === 'firms' && (
-             <div className="animate-in fade-in duration-300"><h2 className="text-2xl font-bold text-white mb-6">Registered Firms</h2><div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden"><table className="w-full text-left border-collapse"><thead><tr className="bg-slate-950/50 text-slate-500 font-mono text-xs uppercase border-b border-slate-800"><th className="p-4">Firm Name</th><th className="p-4">Email</th><th className="p-4">Phone</th><th className="p-4">Status</th><th className="p-4 text-right">Actions</th></tr></thead><tbody className="divide-y divide-slate-800">{allUsers.map(user => (<tr key={user.id} className="hover:bg-slate-800/50 transition-colors"><td className="p-4 font-bold text-white">{user.firmName}</td><td className="p-4 font-mono text-sm text-slate-400">{user.email}</td><td className="p-4 font-mono text-sm text-slate-400">{user.phone || 'N/A'}</td><td className="p-4"><span className={`text-xs font-bold px-2 py-1 rounded border ${user.status === 'banned' ? 'bg-red-950/30 text-red-500 border-red-900/50' : 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50'}`}>{user.status === 'banned' ? 'BANNED' : 'ACTIVE'}</span></td><td className="p-4 text-right space-x-2"><button onClick={() => sendPasswordReset(user.email)} className="text-xs font-bold bg-indigo-950/30 text-indigo-400 px-3 py-1.5 rounded hover:bg-indigo-900/50 transition-colors">Reset Pass</button><button onClick={() => toggleBanUser(user.id, user.status || 'active', user.firmName)} className="text-xs font-bold bg-orange-950/30 text-orange-400 px-3 py-1.5 rounded hover:bg-orange-900/50 transition-colors">{user.status === 'banned' ? 'Unban' : 'Ban'}</button><button onClick={() => forceDeleteUser(user.id, user.firmName)} className="text-xs font-bold bg-slate-800 text-red-500 px-3 py-1.5 rounded hover:bg-slate-700 transition-colors">Delete</button></td></tr>))}</tbody></table></div></div>
+            <div className="animate-in fade-in duration-300"><h2 className="text-2xl font-bold text-white mb-6">Registered Firms</h2><div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden"><table className="w-full text-left border-collapse"><thead><tr className="bg-slate-950/50 text-slate-500 font-mono text-xs uppercase border-b border-slate-800"><th className="p-4">Firm Name</th><th className="p-4">Email</th><th className="p-4">Phone</th><th className="p-4">Status</th><th className="p-4 text-right">Actions</th></tr></thead><tbody className="divide-y divide-slate-800">{allUsers.map(user => (<tr key={user.id} className="hover:bg-slate-800/50 transition-colors"><td className="p-4 font-bold text-white">{user.firmName}</td><td className="p-4 font-mono text-sm text-slate-400">{user.email}</td><td className="p-4 font-mono text-sm text-slate-400">{user.phone || 'N/A'}</td><td className="p-4"><span className={`text-xs font-bold px-2 py-1 rounded border ${user.status === 'banned' ? 'bg-red-950/30 text-red-500 border-red-900/50' : 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50'}`}>{user.status === 'banned' ? 'BANNED' : 'ACTIVE'}</span></td><td className="p-4 text-right space-x-2"><button onClick={() => sendPasswordReset(user.email)} className="text-xs font-bold bg-indigo-950/30 text-indigo-400 px-3 py-1.5 rounded hover:bg-indigo-900/50 transition-colors">Reset Pass</button><button onClick={() => toggleBanUser(user.id, user.status || 'active', user.firmName)} className="text-xs font-bold bg-orange-950/30 text-orange-400 px-3 py-1.5 rounded hover:bg-orange-900/50 transition-colors">{user.status === 'banned' ? 'Unban' : 'Ban'}</button><button onClick={() => forceDeleteUser(user.id, user.firmName)} className="text-xs font-bold bg-slate-800 text-red-500 px-3 py-1.5 rounded hover:bg-slate-700 transition-colors">Delete</button></td></tr>))}</tbody></table></div></div>
           )}
 
           {/* TAB: CAMPAIGNS */}
@@ -459,58 +459,58 @@ function Admin() {
 
           {/* TAB: PAYOUTS */}
           {activeTab === 'payouts' && (
-             <div className="animate-in fade-in duration-300">
-                <div className="mb-6 border-b border-slate-800 pb-6">
-                  <h2 className="text-2xl font-bold text-white mb-2">Designer Payouts</h2>
-                  <p className="text-slate-400 font-mono text-sm">Manage withdrawal requests from designers.</p>
+            <div className="animate-in fade-in duration-300">
+              <div className="mb-6 border-b border-slate-800 pb-6">
+                <h2 className="text-2xl font-bold text-white mb-2">Designer Payouts</h2>
+                <p className="text-slate-400 font-mono text-sm">Manage withdrawal requests from designers.</p>
+              </div>
+
+              {payoutRequests.length === 0 ? (
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-16 text-center text-slate-500">
+                  <div className="text-6xl mb-4">💰</div>
+                  <h3 className="text-xl font-bold text-white mb-2">No Payout Requests</h3>
+                  <p>Designers have not requested any withdrawals.</p>
                 </div>
-                
-                {payoutRequests.length === 0 ? (
-                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-16 text-center text-slate-500">
-                    <div className="text-6xl mb-4">💰</div>
-                    <h3 className="text-xl font-bold text-white mb-2">No Payout Requests</h3>
-                    <p>Designers have not requested any withdrawals.</p>
-                  </div>
-                ) : (
-                  <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="bg-slate-950/50 text-slate-500 font-mono text-xs uppercase border-b border-slate-800">
-                          <th className="p-4">Designer</th>
-                          <th className="p-4 text-right">Amount</th>
-                          <th className="p-4">Status</th>
-                          <th className="p-4 text-right">Actions</th>
+              ) : (
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-950/50 text-slate-500 font-mono text-xs uppercase border-b border-slate-800">
+                        <th className="p-4">Designer</th>
+                        <th className="p-4 text-right">Amount</th>
+                        <th className="p-4">Status</th>
+                        <th className="p-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      {payoutRequests.map(req => (
+                        <tr key={req.id} className="hover:bg-slate-800/50 transition-colors">
+                          <td className="p-4">
+                            <p className="font-bold text-white">{req.designerName}</p>
+                            <p className="font-mono text-sm text-slate-400">{req.designerEmail}</p>
+                          </td>
+                          <td className="p-4 text-right font-bold text-emerald-400 text-lg">
+                            ₹{req.amount.toLocaleString()}
+                          </td>
+                          <td className="p-4">
+                            <span className={`text-xs font-bold px-2 py-1 rounded border ${req.status === 'paid' ? 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50' : 'bg-yellow-950/30 text-yellow-500 border-yellow-900/50'}`}>
+                              {req.status === 'paid' ? 'PAID' : 'PENDING'}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right">
+                            {req.status === 'pending' ? (
+                              <button onClick={() => handleApprovePayout(req)} className="text-xs font-bold bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-500 transition-colors">Mark Paid</button>
+                            ) : (
+                              <span className="text-xs text-slate-500 font-mono">Completed</span>
+                            )}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-800">
-                        {payoutRequests.map(req => (
-                          <tr key={req.id} className="hover:bg-slate-800/50 transition-colors">
-                            <td className="p-4">
-                              <p className="font-bold text-white">{req.designerName}</p>
-                              <p className="font-mono text-sm text-slate-400">{req.designerEmail}</p>
-                            </td>
-                            <td className="p-4 text-right font-bold text-emerald-400 text-lg">
-                              ₹{req.amount.toLocaleString()}
-                            </td>
-                            <td className="p-4">
-                              <span className={`text-xs font-bold px-2 py-1 rounded border ${req.status === 'paid' ? 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50' : 'bg-yellow-950/30 text-yellow-500 border-yellow-900/50'}`}>
-                                {req.status === 'paid' ? 'PAID' : 'PENDING'}
-                              </span>
-                            </td>
-                            <td className="p-4 text-right">
-                              {req.status === 'pending' ? (
-                                <button onClick={() => handleApprovePayout(req)} className="text-xs font-bold bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-500 transition-colors">Mark Paid</button>
-                              ) : (
-                                <span className="text-xs text-slate-500 font-mono">Completed</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-             </div>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           )}
 
           {/* TAB: CRM INBOX */}
@@ -529,12 +529,12 @@ function Admin() {
                           <h3 className="text-xl font-bold text-white">{req.subject}</h3>
                           <p className="text-sm text-indigo-400 font-mono mt-1">{req.firmName} ({req.clientEmail})</p>
                           {req.clientPhone && req.clientPhone !== 'Not Provided' && <p className="text-xs text-slate-500 font-mono mt-1">Phone: {req.clientPhone}</p>}
-                          
+
                           <div className="flex gap-2 items-center mt-3">
-                             <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded border ${req.status === 'resolved' ? 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50' : 'bg-yellow-950/30 text-yellow-500 border-yellow-900/50'}`}>{req.status === 'resolved' ? '✓ Resolved' : '⏳ Pending'}</span>
-                             <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-950/30 text-indigo-400 border border-indigo-900/50 px-3 py-1 rounded">
-                               Designer: {req.selectedDesignerName || 'Any Available'}
-                             </span>
+                            <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded border ${req.status === 'resolved' ? 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50' : 'bg-yellow-950/30 text-yellow-500 border-yellow-900/50'}`}>{req.status === 'resolved' ? '✓ Resolved' : '⏳ Pending'}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-950/30 text-indigo-400 border border-indigo-900/50 px-3 py-1 rounded">
+                              Designer: {req.selectedDesignerName || 'Any Available'}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -556,47 +556,47 @@ function Admin() {
 
           {/* TAB: DESIGNERS ROSTER */}
           {activeTab === 'designers' && (
-             <div className="animate-in fade-in duration-300">
-                <div className="flex justify-between items-end mb-6 border-b border-slate-800 pb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Agency Roster</h2>
-                    <p className="text-slate-400 font-mono text-sm">Manage designers who applied via the Designer Portal.</p>
-                  </div>
+            <div className="animate-in fade-in duration-300">
+              <div className="flex justify-between items-end mb-6 border-b border-slate-800 pb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Agency Roster</h2>
+                  <p className="text-slate-400 font-mono text-sm">Manage designers who applied via the Designer Portal.</p>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {designers.map(d => (
-                    <div key={d.id} className="bg-slate-900 border border-slate-800 p-6 rounded-2xl relative group flex flex-col shadow-lg">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="w-16 h-16 bg-indigo-950/50 text-indigo-400 rounded-full flex items-center justify-center text-2xl font-black border border-indigo-900/50">{d.name.charAt(0)}</div>
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded border ${d.designerStatus === 'active' ? 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50' : d.designerStatus === 'pending' ? 'bg-yellow-950/30 text-yellow-500 border-yellow-900/50' : 'bg-red-950/30 text-red-500 border-red-900/50'}`}>{d.designerStatus}</span>
-                      </div>
-                      <h3 className="font-bold text-xl text-white">{d.name}</h3>
-                      <p className="text-xs font-mono text-emerald-500 uppercase tracking-widest mb-4">{d.specialty}</p>
-                      <div className="space-y-1 mb-4">
-                         <p className="text-sm text-slate-400 font-mono">✉️ {d.email}</p>
-                         {d.phone && <p className="text-sm text-slate-400 font-mono">📱 {d.phone}</p>}
-                         {d.portfolio && <p className="text-sm text-indigo-400 font-mono hover:underline cursor-pointer" onClick={() => window.open(d.portfolio)}>🔗 Portfolio</p>}
-                      </div>
-                      
-                      <button onClick={() => handleToggleDesignerStatus(d.id, d.designerStatus)} className={`mt-auto w-full py-2 rounded-lg text-xs font-bold transition-colors border ${d.designerStatus === 'active' ? 'bg-red-950/30 text-red-500 border-red-900/50 hover:bg-red-900/50' : 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50 hover:bg-emerald-900/50'}`}>
-                        {d.designerStatus === 'active' ? 'Suspend Designer' : 'Approve Designer'}
-                      </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {designers.map(d => (
+                  <div key={d.id} className="bg-slate-900 border border-slate-800 p-6 rounded-2xl relative group flex flex-col shadow-lg">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="w-16 h-16 bg-indigo-950/50 text-indigo-400 rounded-full flex items-center justify-center text-2xl font-black border border-indigo-900/50">{d.name.charAt(0)}</div>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded border ${d.designerStatus === 'active' ? 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50' : d.designerStatus === 'pending' ? 'bg-yellow-950/30 text-yellow-500 border-yellow-900/50' : 'bg-red-950/30 text-red-500 border-red-900/50'}`}>{d.designerStatus}</span>
                     </div>
-                  ))}
-                  {designers.length === 0 && (
-                    <div className="col-span-full bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl p-12 text-center text-slate-500">
-                      <span className="text-3xl mb-2 block">👥</span> No designers applied yet.
+                    <h3 className="font-bold text-xl text-white">{d.name}</h3>
+                    <p className="text-xs font-mono text-emerald-500 uppercase tracking-widest mb-4">{d.specialty}</p>
+                    <div className="space-y-1 mb-4">
+                      <p className="text-sm text-slate-400 font-mono">✉️ {d.email}</p>
+                      {d.phone && <p className="text-sm text-slate-400 font-mono">📱 {d.phone}</p>}
+                      {d.portfolio && <p className="text-sm text-indigo-400 font-mono hover:underline cursor-pointer" onClick={() => window.open(d.portfolio)}>🔗 Portfolio</p>}
                     </div>
-                  )}
-                </div>
-             </div>
+
+                    <button onClick={() => handleToggleDesignerStatus(d.id, d.designerStatus)} className={`mt-auto w-full py-2 rounded-lg text-xs font-bold transition-colors border ${d.designerStatus === 'active' ? 'bg-red-950/30 text-red-500 border-red-900/50 hover:bg-red-900/50' : 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50 hover:bg-emerald-900/50'}`}>
+                      {d.designerStatus === 'active' ? 'Suspend Designer' : 'Approve Designer'}
+                    </button>
+                  </div>
+                ))}
+                {designers.length === 0 && (
+                  <div className="col-span-full bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl p-12 text-center text-slate-500">
+                    <span className="text-3xl mb-2 block">👥</span> No designers applied yet.
+                  </div>
+                )}
+              </div>
+            </div>
           )}
 
           {/* TAB: PRO TEMPLATE STUDIO */}
           {activeTab === 'templates' && (
             <div className="animate-in fade-in duration-300 flex flex-col h-full">
-              
+
               <div className="flex justify-between items-end mb-6 pb-6 border-b border-slate-800">
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">Master Template Studio</h2>
@@ -609,7 +609,7 @@ function Admin() {
 
               {/* The Studio Workspace */}
               <div className="flex-1 flex gap-6 min-h-150">
-                
+
                 {/* LEFT: CANVAS */}
                 <div className="flex-[1.5] bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden relative">
                   <div className="h-14 bg-slate-950/50 border-b border-slate-800 flex items-center justify-between px-6 z-10">
@@ -617,14 +617,14 @@ function Admin() {
                     <input type="file" ref={templateFileInputRef} onChange={handleTemplateBgUpload} accept="image/*" className="hidden" />
                     <button onClick={() => templateFileInputRef.current.click()} className="text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white px-4 py-1.5 rounded transition-colors border border-slate-700">{templateBg ? 'Change Background' : 'Upload Background'}</button>
                   </div>
-                  
+
                   <div className="flex-1 bg-[#0f172a] flex items-center justify-center p-8 overflow-auto" onClick={() => setTemplateSelectedId(null)}>
                     <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#4f46e5_1px,transparent_1px)] bg-size-[20px_20px] pointer-events-none"></div>
-                    
+
                     {/* DYNAMIC CANVAS CONTAINER */}
                     <div className="w-full max-w-sm bg-white relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] ring-1 ring-slate-800 z-10 rounded-lg" style={{ aspectRatio: `${templateCanvasWidth} / ${templateCanvasHeight}`, backgroundImage: templateBg ? `url(${templateBg})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }}>
                       {!templateBg && <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 font-mono text-sm p-6 text-center border-2 border-dashed border-slate-700 m-4 rounded-xl"><span className="text-3xl mb-2">🖼️</span> Upload Background</div>}
-                      
+
                       {templateElements.map((el) => (
                         <Rnd
                           key={el.id} size={{ width: el.width, height: el.height }} position={{ x: el.x, y: el.y }}
@@ -635,11 +635,11 @@ function Admin() {
                           className={`absolute flex items-center cursor-move transition-shadow ${templateSelectedId === el.id ? 'ring-2 ring-indigo-500 shadow-xl' : ''}`}
                           style={{ zIndex: el.zIndex || 1 }}
                         >
-                          <div style={{ 
+                          <div style={{
                             width: '100%', height: '100%', display: 'flex', transform: `rotate(${el.rotation || 0}deg)`, opacity: el.opacity ?? 1,
-                            ...(el.type === 'text' && { color: el.color, fontSize: `${el.fontSize}px`, fontFamily: el.fontFamily || '"Montserrat", sans-serif', textAlign: el.textAlign || 'center', justifyContent: el.textAlign === 'center' ? 'center' : el.textAlign === 'right' ? 'flex-end' : 'flex-start', fontWeight: el.fontWeight || 'bold', fontStyle: el.fontStyle || 'normal', textTransform: el.textTransform || 'none', letterSpacing: `${el.letterSpacing || 0}px`, lineHeight: el.lineHeight || 1.2, whiteSpace: 'pre-wrap', WebkitTextStroke: `${el.textStrokeWidth || 0}px ${el.textStrokeColor || '#000000'}`, textShadow: `${el.shadowOffsetX || 0}px ${el.shadowOffsetY || 2}px ${el.shadowBlur !== undefined ? el.shadowBlur : 4}px ${el.shadowColor || 'rgba(0,0,0,0.5)'}` }), 
+                            ...(el.type === 'text' && { color: el.color, fontSize: `${el.fontSize}px`, fontFamily: el.fontFamily || '"Montserrat", sans-serif', textAlign: el.textAlign || 'center', justifyContent: el.textAlign === 'center' ? 'center' : el.textAlign === 'right' ? 'flex-end' : 'flex-start', fontWeight: el.fontWeight || 'bold', fontStyle: el.fontStyle || 'normal', textTransform: el.textTransform || 'none', letterSpacing: `${el.letterSpacing || 0}px`, lineHeight: el.lineHeight || 1.2, whiteSpace: 'pre-wrap', WebkitTextStroke: `${el.textStrokeWidth || 0}px ${el.textStrokeColor || '#000000'}`, textShadow: `${el.shadowOffsetX || 0}px ${el.shadowOffsetY || 2}px ${el.shadowBlur !== undefined ? el.shadowBlur : 4}px ${el.shadowColor || 'rgba(0,0,0,0.5)'}` }),
                             ...(el.type === 'shape' && { backgroundColor: el.backgroundColor, borderRadius: `${el.borderRadius}px`, border: `${el.borderWidth || 0}px solid ${el.borderColor || 'transparent'}`, boxShadow: `${el.shadowOffsetX || 0}px ${el.shadowOffsetY || 0}px ${el.shadowBlur || 0}px ${el.shadowColor || 'transparent'}` }),
-                            ...(el.type === 'photo' && { filter: `brightness(${el.filterBrightness ?? 100}%) contrast(${el.filterContrast ?? 100}%) saturate(${el.filterSaturation ?? 100}%) blur(${el.filterBlur || 0}px)`, backgroundColor: 'rgba(255,255,255,0.6)', border: `${el.borderWidth || 0}px solid ${el.borderColor || 'transparent'}`, borderRadius: `${el.borderRadius}%`, backdropFilter: 'blur(4px)', justifyContent: 'center', alignItems: 'center' }) 
+                            ...(el.type === 'photo' && { filter: `brightness(${el.filterBrightness ?? 100}%) contrast(${el.filterContrast ?? 100}%) saturate(${el.filterSaturation ?? 100}%) blur(${el.filterBlur || 0}px)`, backgroundColor: 'rgba(255,255,255,0.6)', border: `${el.borderWidth || 0}px solid ${el.borderColor || 'transparent'}`, borderRadius: `${el.borderRadius}%`, backdropFilter: 'blur(4px)', justifyContent: 'center', alignItems: 'center' })
                           }}>
                             {el.type === 'text' ? el.text : el.type === 'photo' ? <span className="text-indigo-900 font-black text-[10px] bg-white/70 px-2 py-1 rounded tracking-widest uppercase">Photo Area</span> : null}
                           </div>
@@ -731,7 +731,7 @@ function Admin() {
                             {selectedTemplateElement.type === 'shape' && (
                               <div><label className="text-[10px] font-bold text-slate-500 uppercase mb-1 block pl-1">Fill Color</label><input type="color" value={selectedTemplateElement.backgroundColor} onChange={(e) => updateTemplateElement(selectedTemplateElement.id, { backgroundColor: e.target.value })} className="w-full h-10 bg-slate-950 border border-slate-800 rounded-lg p-0.5 cursor-pointer shadow-sm" /></div>
                             )}
-                            
+
                             {selectedTemplateElement.type === 'photo' && (
                               <>
                                 <div><div className="flex justify-between mb-1"><label className="text-[10px] font-bold text-slate-500 uppercase">Brightness</label><span className="text-[10px] text-indigo-400">{selectedTemplateElement.filterBrightness ?? 100}%</span></div><input type="range" min="0" max="200" value={selectedTemplateElement.filterBrightness ?? 100} onChange={(e) => updateTemplateElement(selectedTemplateElement.id, { filterBrightness: Number(e.target.value) })} className="w-full accent-indigo-500" /></div>
@@ -779,10 +779,10 @@ function Admin() {
                   <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
                     {allTemplates.map(temp => (
                       <div key={temp.id} className="bg-slate-900 border border-slate-800 p-2 rounded-xl min-w-62.5 flex items-center gap-3 shrink-0 group">
-                        <div className="w-12 h-16 bg-slate-800 rounded bg-cover bg-center" style={{ backgroundImage: `url(${temp.backgroundImage})`}}></div>
+                        <div className="w-12 h-16 bg-slate-800 rounded bg-cover bg-center" style={{ backgroundImage: `url(${temp.backgroundImage})` }}></div>
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-white font-bold text-sm truncate">{temp.title}</p>
-                            <p className="text-xs text-slate-500 font-mono mt-1">{temp.elements?.length || 0} Layers</p>
+                          <p className="text-white font-bold text-sm truncate">{temp.title}</p>
+                          <p className="text-xs text-slate-500 font-mono mt-1">{temp.elements?.length || 0} Layers</p>
                         </div>
                         <button onClick={() => forceDeleteTemplate(temp.id)} className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/10 rounded-lg">🗑️</button>
                       </div>

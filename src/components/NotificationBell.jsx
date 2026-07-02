@@ -53,7 +53,7 @@ export default function NotificationBell({ userId }) {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button 
+      <button
         onClick={handleToggle}
         className="relative p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors focus:outline-none"
       >
@@ -73,7 +73,7 @@ export default function NotificationBell({ userId }) {
             <h3 className="font-black text-slate-800 text-sm">Notifications</h3>
             {unreadCount > 0 && <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">{unreadCount} New</span>}
           </div>
-          
+
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
               <div className="p-8 text-center text-slate-400">

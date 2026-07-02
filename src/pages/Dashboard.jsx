@@ -24,28 +24,28 @@ const FONT_FAMILIES = [
 function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // --- CORE STATE ---
   const [user, setUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null); 
+  const [userProfile, setUserProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeView, setActiveView] = useState('overview'); 
+  const [activeView, setActiveView] = useState('overview');
 
   const [campaigns, setCampaigns] = useState([]);
-  const [platformTemplates, setPlatformTemplates] = useState([]); 
-  const [designers, setDesigners] = useState([]); 
-  const [whatsappNumber, setWhatsappNumber] = useState(''); 
+  const [platformTemplates, setPlatformTemplates] = useState([]);
+  const [designers, setDesigners] = useState([]);
+  const [whatsappNumber, setWhatsappNumber] = useState('');
   const [isFetching, setIsFetching] = useState(false);
 
   const [editFirmName, setEditFirmName] = useState('');
-  const [editPhone, setEditPhone] = useState(''); 
+  const [editPhone, setEditPhone] = useState('');
   const [editIsPremium, setEditIsPremium] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   // --- DESIGN REQUEST STATE ---
   const [designSubject, setDesignSubject] = useState('');
   const [designDetails, setDesignDetails] = useState('');
-  const [selectedDesigner, setSelectedDesigner] = useState(null); 
+  const [selectedDesigner, setSelectedDesigner] = useState(null);
   const [isSendingRequest, setIsSendingRequest] = useState(false);
 
   // ==========================================
@@ -53,14 +53,14 @@ function Dashboard() {
   // ==========================================
   const [editingCampaignId, setEditingCampaignId] = useState(null);
   const [campaignTitle, setCampaignTitle] = useState('');
-  const [bgImage, setBgImage] = useState(null); 
-  const [bgImageFile, setBgImageFile] = useState(null); 
+  const [bgImage, setBgImage] = useState(null);
+  const [bgImageFile, setBgImageFile] = useState(null);
   const [canvasWidth, setCanvasWidth] = useState(800);
   const [canvasHeight, setCanvasHeight] = useState(1066);
-  
+
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
-  
+
   const [history, setHistory] = useState([[]]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const elements = history[historyIndex] || [];
@@ -73,8 +73,8 @@ function Dashboard() {
     elements,
     isPublic
   };
-  
- 
+
+
   const [isSaving, setIsSaving] = useState(false);
   // AUTH & DATA FETCHING
   // ==========================================
@@ -92,9 +92,9 @@ function Dashboard() {
           console.error('Error loading user profile:', err);
         }
         fetchDashboardData(currentUser.email);
-      } else { 
+      } else {
         // 🚀 PRESERVE URL PARAMS ON REDIRECT
-        navigate('/auth' + location.search); 
+        navigate('/auth' + location.search);
       }
     });
     return () => unsubscribe();
@@ -115,10 +115,10 @@ function Dashboard() {
 
       const configDoc = await getDoc(doc(db, "settings", "platform"));
       if (configDoc.exists()) setWhatsappNumber(configDoc.data().whatsappNumber || '');
-    } catch (error) { 
+    } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      toast.error("Error loading campaigns. Please refresh the page."); 
-    } 
+      toast.error("Error loading campaigns. Please refresh the page.");
+    }
     finally { setIsFetching(false); setIsLoading(false); }
   };
 
@@ -135,22 +135,22 @@ function Dashboard() {
     setIsPublic(false);
     setCanvasWidth(template.canvasWidth || 800);
     setCanvasHeight(template.canvasHeight || 1066);
-    
+
     // Inject the master layers into the history
     const templateElements = template.elements || [];
     setHistory([templateElements]);
     setHistoryIndex(0);
-    
+
     setActiveView('studio');
     // Clean the URL so it doesn't loop on refresh
     window.history.replaceState({}, document.title, '/dashboard');
-    
+
     // Simulate a purchase for the designer's earnings
     try {
       await updateDoc(doc(db, "templates", template.id), {
         timesPurchased: increment(1)
       });
-    } catch(err) {
+    } catch (err) {
       console.error("Failed to increment timesPurchased", err);
     }
   }, []);
@@ -163,13 +163,13 @@ function Dashboard() {
       const currentRating = template.rating || 5.0;
       const reviewCount = template.reviewCount || 1;
       const newRating = ((currentRating * reviewCount) + rating) / (reviewCount + 1);
-      
+
       await updateDoc(doc(db, "templates", template.id), {
         rating: newRating,
         reviewCount: increment(1)
       });
       toast.success("Thanks for your review!");
-      
+
       // Update local state so UI reflects immediately
       setPlatformTemplates(prev => prev.map(t => t.id === template.id ? { ...t, rating: newRating, reviewCount: reviewCount + 1 } : t));
     } catch (e) {
@@ -182,13 +182,13 @@ function Dashboard() {
       const currentRating = designer.rating || 5.0;
       const reviewCount = designer.reviewCount || 1;
       const newRating = ((currentRating * reviewCount) + rating) / (reviewCount + 1);
-      
+
       await updateDoc(doc(db, "users", designer.id), {
         rating: newRating,
         reviewCount: increment(1)
       });
       toast.success("Designer rated successfully!");
-      
+
       setDesigners(prev => prev.map(d => d.id === designer.id ? { ...d, rating: newRating, reviewCount: reviewCount + 1 } : d));
     } catch (e) {
       toast.error("Failed to submit rating.");
@@ -213,21 +213,21 @@ function Dashboard() {
   const handleDesignerSubmit = async (e) => {
     e.preventDefault();
     if (!designSubject || !designDetails) return toast.error("Please fill in all details.");
-    setIsSendingRequest(true); 
+    setIsSendingRequest(true);
     const toastId = toast.loading('Sending request to the agency...');
     try {
-      await addDoc(collection(db, "designRequests"), { 
-        clientEmail: user.email, 
-        firmName: userProfile?.firmName || 'Unknown', 
-        clientPhone: userProfile?.phone || 'Not Provided', 
-        subject: designSubject, 
-        details: designDetails, 
+      await addDoc(collection(db, "designRequests"), {
+        clientEmail: user.email,
+        firmName: userProfile?.firmName || 'Unknown',
+        clientPhone: userProfile?.phone || 'Not Provided',
+        subject: designSubject,
+        details: designDetails,
         designerId: selectedDesigner ? selectedDesigner.id : null,
         designerName: selectedDesigner ? selectedDesigner.name : null,
-        status: 'pending', 
-        createdAt: serverTimestamp() 
+        status: 'pending',
+        createdAt: serverTimestamp()
       });
-      
+
       if (selectedDesigner) {
         await addDoc(collection(db, "notifications"), {
           userId: selectedDesigner.id,
@@ -254,26 +254,26 @@ function Dashboard() {
   // CAMPAIGN STUDIO CONTROLS
   // ==========================================
 
-  const handleCreateNewCampaign = () => { 
+  const handleCreateNewCampaign = () => {
     setEditingCampaignId(null); setCampaignTitle(''); setBgImage(null); setBgImageFile(null); setIsPublic(false);
-    setHistory([[]]); setHistoryIndex(0); setCanvasWidth(800); setCanvasHeight(1066); setActiveView('studio'); 
-  };
-  
-  const handleEditCampaign = (c) => { 
-    setEditingCampaignId(c.id); setCampaignTitle(c.title); setBgImage(c.backgroundImage); setBgImageFile(null); setIsPublic(c.isPublic || false);
-    setHistory([c.elements || []]); setHistoryIndex(0); setCanvasWidth(c.canvasWidth || 800); setCanvasHeight(c.canvasHeight || 1066); setActiveView('studio'); 
+    setHistory([[]]); setHistoryIndex(0); setCanvasWidth(800); setCanvasHeight(1066); setActiveView('studio');
   };
 
-  const handleDeleteCampaign = async (id) => { 
-    if (!window.confirm("Delete this campaign?")) return; 
-    try { 
-      await deleteDoc(doc(db, "campaigns", id)); 
-      setCampaigns(campaigns.filter(c => c.id !== id)); 
-      toast.success("Campaign deleted."); 
-    } catch (e) { 
+  const handleEditCampaign = (c) => {
+    setEditingCampaignId(c.id); setCampaignTitle(c.title); setBgImage(c.backgroundImage); setBgImageFile(null); setIsPublic(c.isPublic || false);
+    setHistory([c.elements || []]); setHistoryIndex(0); setCanvasWidth(c.canvasWidth || 800); setCanvasHeight(c.canvasHeight || 1066); setActiveView('studio');
+  };
+
+  const handleDeleteCampaign = async (id) => {
+    if (!window.confirm("Delete this campaign?")) return;
+    try {
+      await deleteDoc(doc(db, "campaigns", id));
+      setCampaigns(campaigns.filter(c => c.id !== id));
+      toast.success("Campaign deleted.");
+    } catch (e) {
       console.error('Error deleting campaign:', e);
       toast.error("Failed to delete campaign.");
-    } 
+    }
   };
 
 
@@ -286,74 +286,74 @@ function Dashboard() {
   // 🚀 SECURE IMGBB UPLOAD LOGIC
   const confirmPublish = async () => {
     setShowPublishModal(false);
-    setIsSaving(true); 
+    setIsSaving(true);
     const toastId = toast.loading('Publishing Campaign...');
-    
+
     try {
-      let publicImageUrl = bgImage; 
-      
+      let publicImageUrl = bgImage;
+
       if (bgImageFile) {
-        const formData = new FormData(); 
+        const formData = new FormData();
         formData.append('image', bgImageFile, 'image.png');
-        
-        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { 
-          method: 'POST', 
-          body: formData 
+
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+          method: 'POST',
+          body: formData
         });
-        
-        const data = await res.json(); 
-        
+
+        const data = await res.json();
+
         if (!data.success) {
           console.error("ImgBB Upload Failed:", data);
           throw new Error("Image hosting rejected the file.");
         }
-        
-        publicImageUrl = data.data.url; 
+
+        publicImageUrl = data.data.url;
       }
-      
-      const payload = { 
-        title: campaignTitle, 
-        backgroundImage: publicImageUrl, 
-        elements: elements, 
-        canvasWidth, 
-        canvasHeight, 
-        isPublic: isPublic, 
+
+      const payload = {
+        title: campaignTitle,
+        backgroundImage: publicImageUrl,
+        elements: elements,
+        canvasWidth,
+        canvasHeight,
+        isPublic: isPublic,
         isPremium: userProfile?.isPremium || false,
-        updatedAt: serverTimestamp() 
+        updatedAt: serverTimestamp()
       };
-      
+
       if (editingCampaignId) {
         await updateDoc(doc(db, "campaigns", editingCampaignId), payload);
-      } else { 
-        payload.ownerEmail = user.email; 
-        payload.createdAt = serverTimestamp(); 
-        payload.views = 0; 
-        payload.postersGenerated = 0; 
-        const docRef = await addDoc(collection(db, "campaigns"), payload); 
+      } else {
+        payload.ownerEmail = user.email;
+        payload.createdAt = serverTimestamp();
+        payload.views = 0;
+        payload.postersGenerated = 0;
+        const docRef = await addDoc(collection(db, "campaigns"), payload);
         setEditingCampaignId(docRef.id);
       }
-      
-      fetchDashboardData(user.email); 
+
+      fetchDashboardData(user.email);
       toast.success('Campaign Published Successfully!', { id: toastId });
-    } catch (e) { 
+    } catch (e) {
       console.error(e);
-      toast.error("Failed to upload image. Check console.", { id: toastId }); 
-    } finally { 
-      setIsSaving(false); 
+      toast.error("Failed to upload image. Check console.", { id: toastId });
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault(); if (!editFirmName.trim()) return toast.error("Firm name cannot be empty."); setIsUpdatingProfile(true);
-    try { 
-      await updateDoc(doc(db, "users", user.uid), { firmName: editFirmName, phone: editPhone, isPremium: editIsPremium }); 
-      setUserProfile(prev => ({ ...prev, firmName: editFirmName, phone: editPhone, isPremium: editIsPremium })); 
-      toast.success("Profile Updated Successfully!"); 
-    } catch (error) { 
+    try {
+      await updateDoc(doc(db, "users", user.uid), { firmName: editFirmName, phone: editPhone, isPremium: editIsPremium });
+      setUserProfile(prev => ({ ...prev, firmName: editFirmName, phone: editPhone, isPremium: editIsPremium }));
+      toast.success("Profile Updated Successfully!");
+    } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error("Failed to update profile. Please try again."); 
-    } finally { 
-      setIsUpdatingProfile(false); 
+      toast.error("Failed to update profile. Please try again.");
+    } finally {
+      setIsUpdatingProfile(false);
     }
   };
 
@@ -365,7 +365,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex font-sans text-slate-800 pb-20 md:pb-0">
-      
+
       <aside className="w-72 bg-white border-r border-slate-200 hidden md:flex md:flex-col shrink-0 z-40 relative shadow-sm">
         <div className="p-8 border-b border-slate-100 flex items-center gap-3"><div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-600/30"><span className="text-white font-black text-xl leading-none">C</span></div><div className="text-2xl font-black text-slate-800 tracking-tight cursor-pointer" onClick={() => navigate('/')}>Camp<span className="text-indigo-600">Send</span></div></div>
         <nav className="flex-1 p-6 flex flex-col gap-2 overflow-y-auto">
@@ -419,7 +419,7 @@ function Dashboard() {
         )}
 
         <div className="flex-1 p-4 md:p-10 w-full max-w-6xl mx-auto h-full flex flex-col">
-          
+
           {activeView === 'overview' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col md:flex-row justify-between md:items-end mb-8 gap-4">
@@ -440,31 +440,31 @@ function Dashboard() {
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
                         <div className="flex justify-between items-start mb-2">
-                           <h3 className="font-bold text-lg text-slate-800 truncate pr-2">{camp.title}</h3>
-                           {camp.isPublic && <span className="shrink-0 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] font-black uppercase px-2 py-0.5 rounded">Public</span>}
+                          <h3 className="font-bold text-lg text-slate-800 truncate pr-2">{camp.title}</h3>
+                          {camp.isPublic && <span className="shrink-0 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] font-black uppercase px-2 py-0.5 rounded">Public</span>}
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="flex gap-4"><div className="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><p className="text-[9px] font-black text-slate-400 uppercase">Reach</p><p className="font-bold text-slate-700 text-sm">{camp.views || 0}</p></div><div className="bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100/50"><p className="text-[9px] font-black text-indigo-400 uppercase">Downs</p><p className="font-bold text-indigo-700 text-sm">{camp.postersGenerated || 0}</p></div></div>
-                          
+
                           <div className="flex flex-col items-center gap-1 group/qr cursor-pointer relative" onClick={(e) => {
                             // Quick hack to download QR code SVG
                             const svg = e.currentTarget.querySelector('svg');
-                            if(!svg) return;
+                            if (!svg) return;
                             const svgData = new XMLSerializer().serializeToString(svg);
                             const canvas = document.createElement("canvas");
                             const ctx = canvas.getContext("2d");
                             const img = new Image();
                             img.onload = () => {
-                                canvas.width = img.width;
-                                canvas.height = img.height;
-                                ctx.fillStyle = "white";
-                                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                                ctx.drawImage(img, 0, 0);
-                                const pngFile = canvas.toDataURL("image/png");
-                                const downloadLink = document.createElement("a");
-                                downloadLink.download = `QR_${camp.title.replace(/\s+/g, '_')}.png`;
-                                downloadLink.href = `${pngFile}`;
-                                downloadLink.click();
+                              canvas.width = img.width;
+                              canvas.height = img.height;
+                              ctx.fillStyle = "white";
+                              ctx.fillRect(0, 0, canvas.width, canvas.height);
+                              ctx.drawImage(img, 0, 0);
+                              const pngFile = canvas.toDataURL("image/png");
+                              const downloadLink = document.createElement("a");
+                              downloadLink.download = `QR_${camp.title.replace(/\s+/g, '_')}.png`;
+                              downloadLink.href = `${pngFile}`;
+                              downloadLink.click();
                             };
                             img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
                             toast.success("Downloading QR Code...");
@@ -496,13 +496,13 @@ function Dashboard() {
                         <span className="text-xs font-bold text-slate-800">{template.rating ? template.rating.toFixed(1) : "5.0"}</span>
                       </div>
                       <div onClick={() => handleUseMasterTemplate(template)} className="aspect-3/4 bg-slate-100 rounded-xl mb-3 overflow-hidden relative cursor-pointer">
-                        <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url(${template.backgroundImage})`}}></div>
+                        <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url(${template.backgroundImage})` }}></div>
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"><span className="bg-white text-indigo-600 font-bold text-sm px-4 py-2 rounded-lg shadow-lg">Use Template</span></div>
                       </div>
                       <div className="flex justify-between items-center px-1 mb-1">
                         <h3 className="font-bold text-sm text-slate-800 truncate pr-2">{template.title}</h3>
                         <div className="flex gap-1">
-                           <button onClick={(e) => { e.stopPropagation(); handleRateTemplate(template, 5); }} className="text-slate-300 hover:text-yellow-400 transition-colors" title="Rate 5 Stars">★</button>
+                          <button onClick={(e) => { e.stopPropagation(); handleRateTemplate(template, 5); }} className="text-slate-300 hover:text-yellow-400 transition-colors" title="Rate 5 Stars">★</button>
                         </div>
                       </div>
                     </div>
@@ -522,35 +522,35 @@ function Dashboard() {
 
               <div className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 p-6 md:p-10 relative overflow-hidden mb-8">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-purple-400 rounded-full blur-[80px] opacity-10 pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
-                
+
                 <form onSubmit={handleDesignerSubmit} className="relative z-10 flex flex-col gap-6">
-                  
+
                   <div>
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">1. Select Your Designer</label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       <div onClick={() => setSelectedDesigner(null)} className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${!selectedDesigner ? 'border-purple-500 bg-purple-50 shadow-md' : 'border-slate-200 bg-slate-50 hover:border-purple-200'}`}>
-                         <div className="text-2xl mb-1">⚡</div>
-                         <h3 className="font-bold text-slate-800 text-sm">Any Available</h3>
-                         <p className="text-[10px] text-slate-500 uppercase tracking-wider mt-1">Fastest Delivery</p>
+                        <div className="text-2xl mb-1">⚡</div>
+                        <h3 className="font-bold text-slate-800 text-sm">Any Available</h3>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mt-1">Fastest Delivery</p>
                       </div>
-                      
+
                       {designers.map(d => (
                         <div key={d.id} onClick={() => setSelectedDesigner(d)} className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedDesigner?.id === d.id ? 'border-purple-500 bg-purple-50 shadow-md' : 'border-slate-200 bg-white hover:border-purple-200'}`}>
-                           <div className="flex justify-between items-start mb-2">
-                             <div className="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-black text-sm">{d.name.charAt(0)}</div>
-                             {d.portfolio && (
-                               <a href={d.portfolio} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-[10px] bg-slate-100 text-slate-600 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 rounded font-bold transition-colors">Portfolio ↗</a>
-                             )}
-                           </div>
-                           <h3 className="font-bold text-slate-800 text-sm truncate">{d.name}</h3>
-                           <div className="flex justify-between items-center mt-1">
-                             <p className="text-[10px] font-bold text-purple-500 uppercase tracking-wider truncate">{d.specialty}</p>
-                             <div className="flex items-center gap-1 group/rate">
-                               <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><span className="text-yellow-500">⭐</span> {d.rating ? d.rating.toFixed(1) : "5.0"}</p>
-                               <button onClick={(e) => { e.stopPropagation(); handleRateDesigner(d, 5); }} className="text-slate-300 hover:text-yellow-400 transition-colors opacity-0 group-hover/rate:opacity-100" title="Give 5 Stars">★</button>
-                             </div>
-                           </div>
-                           {d.designerBio && <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed">{d.designerBio}</p>}
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-black text-sm">{d.name.charAt(0)}</div>
+                            {d.portfolio && (
+                              <a href={d.portfolio} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-[10px] bg-slate-100 text-slate-600 hover:text-purple-600 hover:bg-purple-50 px-2 py-1 rounded font-bold transition-colors">Portfolio ↗</a>
+                            )}
+                          </div>
+                          <h3 className="font-bold text-slate-800 text-sm truncate">{d.name}</h3>
+                          <div className="flex justify-between items-center mt-1">
+                            <p className="text-[10px] font-bold text-purple-500 uppercase tracking-wider truncate">{d.specialty}</p>
+                            <div className="flex items-center gap-1 group/rate">
+                              <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><span className="text-yellow-500">⭐</span> {d.rating ? d.rating.toFixed(1) : "5.0"}</p>
+                              <button onClick={(e) => { e.stopPropagation(); handleRateDesigner(d, 5); }} className="text-slate-300 hover:text-yellow-400 transition-colors opacity-0 group-hover/rate:opacity-100" title="Give 5 Stars">★</button>
+                            </div>
+                          </div>
+                          {d.designerBio && <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed">{d.designerBio}</p>}
                         </div>
                       ))}
                     </div>
@@ -564,7 +564,7 @@ function Dashboard() {
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">3. Details & Requirements</label>
                     <textarea value={designDetails} onChange={(e) => setDesignDetails(e.target.value)} rows="4" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:bg-white focus:border-purple-400 focus:ring-4 focus:ring-purple-500/10 transition-all resize-none" placeholder="Describe your vision, brand colors, text requirements..."></textarea>
                   </div>
-                  
+
                   <button type="submit" disabled={isSendingRequest} className="w-full py-4 bg-slate-900 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50 mt-2">
                     {isSendingRequest ? "Sending Request..." : "Submit Design Request"}
                   </button>
@@ -573,34 +573,34 @@ function Dashboard() {
 
               <div className="bg-[#25D366]/5 border border-[#25D366]/20 rounded-3xl p-6 md:p-8 text-center flex flex-col items-center">
                 <p className="text-sm text-slate-600 font-bold mb-4">Need immediate assistance or prefer to chat?</p>
-                <button onClick={handleDirectWhatsApp} type="button" className="w-full md:w-auto px-8 py-4 bg-[#25D366] text-white font-bold text-lg rounded-xl shadow-lg shadow-[#25D366]/30 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-3"><svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>Chat with us on WhatsApp</button>
+                <button onClick={handleDirectWhatsApp} type="button" className="w-full md:w-auto px-8 py-4 bg-[#25D366] text-white font-bold text-lg rounded-xl shadow-lg shadow-[#25D366]/30 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-3"><svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>Chat with us on WhatsApp</button>
               </div>
             </div>
           )}
 
           {activeView === 'settings' && (
-             <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-               <div className="mb-8 border-b border-slate-200 pb-6"><h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Settings</h1><p className="text-slate-500 mt-2 font-medium">Manage your organization's profile and preferences.</p></div>
-               <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-10 mb-6">
-                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"><span className="text-indigo-600">🏢</span> Firm Details</h2>
-                 <form onSubmit={handleUpdateProfile} className="flex flex-col gap-5">
-                   <div><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Organization Name</label><input type="text" value={editFirmName} onChange={(e) => setEditFirmName(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all" /></div>
-                   <div><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">WhatsApp / Mobile Number</label><input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="e.g. +91 9876543210" /></div>
-                   <div><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Registered Email</label><input type="email" value={user?.email || ''} disabled className="w-full p-4 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-400 cursor-not-allowed" /></div>
-                   
-                   <div className="flex items-center gap-3 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
-                     <input type="checkbox" checked={editIsPremium} onChange={(e) => setEditIsPremium(e.target.checked)} className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500" id="premium-toggle" />
-                     <label htmlFor="premium-toggle" className="font-bold text-indigo-900 cursor-pointer flex-1">
-                       CampSend Premium
-                       <span className="block text-xs text-indigo-500 font-medium">Remove watermark from generated campaigns.</span>
-                     </label>
-                   </div>
+            <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="mb-8 border-b border-slate-200 pb-6"><h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Settings</h1><p className="text-slate-500 mt-2 font-medium">Manage your organization's profile and preferences.</p></div>
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-10 mb-6">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"><span className="text-indigo-600">🏢</span> Firm Details</h2>
+                <form onSubmit={handleUpdateProfile} className="flex flex-col gap-5">
+                  <div><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Organization Name</label><input type="text" value={editFirmName} onChange={(e) => setEditFirmName(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all" /></div>
+                  <div><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">WhatsApp / Mobile Number</label><input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="e.g. +91 9876543210" /></div>
+                  <div><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Registered Email</label><input type="email" value={user?.email || ''} disabled className="w-full p-4 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-400 cursor-not-allowed" /></div>
 
-                   <div className="pt-4 mt-2 border-t border-slate-100 flex justify-end"><button type="submit" disabled={isUpdatingProfile} className="w-full md:w-auto bg-indigo-600 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50">{isUpdatingProfile ? "Saving..." : "Save Changes"}</button></div>
-                 </form>
-               </div>
-               <div className="md:hidden"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2 text-center">Account Security</p><button onClick={handleLogout} className="w-full py-4 bg-white border border-red-200 text-red-500 font-bold rounded-2xl shadow-sm hover:bg-red-50 transition-colors">Sign Out Securely</button></div>
-             </div>
+                  <div className="flex items-center gap-3 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
+                    <input type="checkbox" checked={editIsPremium} onChange={(e) => setEditIsPremium(e.target.checked)} className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500" id="premium-toggle" />
+                    <label htmlFor="premium-toggle" className="font-bold text-indigo-900 cursor-pointer flex-1">
+                      CampSend Premium
+                      <span className="block text-xs text-indigo-500 font-medium">Remove watermark from generated campaigns.</span>
+                    </label>
+                  </div>
+
+                  <div className="pt-4 mt-2 border-t border-slate-100 flex justify-end"><button type="submit" disabled={isUpdatingProfile} className="w-full md:w-auto bg-indigo-600 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50">{isUpdatingProfile ? "Saving..." : "Save Changes"}</button></div>
+                </form>
+              </div>
+              <div className="md:hidden"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2 text-center">Account Security</p><button onClick={handleLogout} className="w-full py-4 bg-white border border-red-200 text-red-500 font-bold rounded-2xl shadow-sm hover:bg-red-50 transition-colors">Sign Out Securely</button></div>
+            </div>
           )}
 
           {/* ========================================== */}
@@ -656,16 +656,16 @@ function Dashboard() {
                 <h3 className="text-2xl font-black text-slate-800 mb-2">Publish Campaign</h3>
                 <p className="text-slate-500 text-sm font-medium mb-6">You are about to make <strong className="text-slate-700">{campaignTitle}</strong> live on the internet.</p>
 
-                <div 
+                <div
                   className={`border-2 rounded-2xl p-4 mb-8 cursor-pointer transition-all ${isPublic ? 'bg-indigo-50 border-indigo-500' : 'bg-slate-50 border-slate-200 hover:border-indigo-300'}`}
                   onClick={() => setIsPublic(!isPublic)}
                 >
                   <div className="flex items-start gap-3">
-                    <input 
-                      type="checkbox" 
-                      checked={isPublic} 
-                      onChange={(e) => setIsPublic(e.target.checked)} 
-                      className="mt-1 w-5 h-5 accent-indigo-600 cursor-pointer shrink-0" 
+                    <input
+                      type="checkbox"
+                      checked={isPublic}
+                      onChange={(e) => setIsPublic(e.target.checked)}
+                      className="mt-1 w-5 h-5 accent-indigo-600 cursor-pointer shrink-0"
                     />
                     <div>
                       <p className={`font-black text-sm ${isPublic ? 'text-indigo-900' : 'text-slate-700'}`}>Feature on Homepage</p>

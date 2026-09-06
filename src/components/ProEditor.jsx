@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 import SelectionTools from './SelectionTools';
 import AdvancedImageEditor from './AdvancedImageEditor';
-import { autoDetectAreas } from '../utils/selectionAlgorithms';
+import { loadCanvasSafeImage } from '../utils/imageLoader';
 
 const FONT_FAMILIES = [
   'Arial, sans-serif', 'Impact, sans-serif', '"Montserrat", sans-serif', '"Poppins", sans-serif',
@@ -125,19 +125,35 @@ export default function ProEditor({
     canvas.height = canvasHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    let isMounted = true;
     if (bgImage) {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      };
-      img.src = bgImage;
+      loadCanvasSafeImage(bgImage)
+        .then((img) => {
+          if (!isMounted) return;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        })
+        .catch((err) => {
+          console.warn("loadCanvasSafeImage fallback:", err);
+          if (!isMounted) return;
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            if (!isMounted) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          };
+          img.src = bgImage;
+        });
     } else {
       // Use background color
       ctx.fillStyle = bgColor || '#FFFFFF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [bgImage, bgColor, canvasWidth, canvasHeight]);
 
   // ==========================================
@@ -266,66 +282,95 @@ export default function ProEditor({
   // ==========================================
   // SELECTION TOOLS
   // ==========================================
-  const getCanvasImageData = () => {
-    const canvas = studioCanvasRef.current;
-    if (!canvas) return null;
-    try {
-      return canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
-    } catch (error) {
-      console.error('Unable to read canvas image data:', error);
-      return null;
-    }
-  };
 
-  const handleQuickSelect = (mode) => {
-    setEditTab('select');
-    toast.success(`Opened tools for ${mode} selection. Try the Magic Wand!`);
-  };
 
   const handleCreateUploadArea = () => {
-    if (!currentSelection || !studioCanvasRef.current || !bgImage) {
-      toast.error("Please upload a background and make a selection first.");
+    if (!currentSelection || !studioCanvasRef.current) {
+      toast.error("Please make a selection first.");
       return;
     }
 
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    currentSelection.pixels.forEach(([x, y]) => {
-      if (x < minX) minX = x;
-      if (y < minY) minY = y;
-      if (x > maxX) maxX = x;
-      if (y > maxY) maxY = y;
-    });
+    if (currentSelection.bounds) {
+      minX = currentSelection.bounds.x;
+      minY = currentSelection.bounds.y;
+      maxX = minX + currentSelection.bounds.width;
+      maxY = minY + currentSelection.bounds.height;
+    } else if (currentSelection.pixels && currentSelection.pixels.length > 0) {
+      for (let i = 0; i < currentSelection.pixels.length; i++) {
+        const [x, y] = currentSelection.pixels[i];
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+    }
 
-    const w = maxX - minX;
-    const h = maxY - minY;
+    if (!isFinite(minX) || !isFinite(minY) || maxX <= minX || maxY <= minY) {
+      toast.error("Selection area is empty. Please select a photo area first.");
+      return;
+    }
 
-    // Generate a mask image from the selection instead of a hole punch
+    const w = Math.max(20, Math.round(maxX - minX));
+    const h = Math.max(20, Math.round(maxY - minY));
+
+    // High performance mask generation
     const maskCanvas = document.createElement('canvas');
-    maskCanvas.width = w + 1;
-    maskCanvas.height = h + 1;
+    maskCanvas.width = w;
+    maskCanvas.height = h;
     const maskCtx = maskCanvas.getContext('2d');
-    maskCtx.fillStyle = '#000000'; // Opaque black for the mask
-    
-    currentSelection.pixels.forEach(([x, y]) => {
-      // Draw at offset so the mask is tightly cropped to the bounding box
-      maskCtx.fillRect(x - minX, y - minY, 1, 1);
-    });
-    
+
+    if (currentSelection.type === 'rectangle') {
+      maskCtx.fillStyle = '#000000';
+      maskCtx.fillRect(0, 0, w, h);
+    } else if (currentSelection.type === 'circle') {
+      maskCtx.fillStyle = '#000000';
+      maskCtx.beginPath();
+      maskCtx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+      maskCtx.fill();
+    } else if (currentSelection.type === 'lasso' && currentSelection.points && currentSelection.points.length > 1) {
+      maskCtx.fillStyle = '#000000';
+      maskCtx.beginPath();
+      const pts = currentSelection.points;
+      maskCtx.moveTo(pts[0][0] - minX, pts[0][1] - minY);
+      for (let i = 1; i < pts.length; i++) {
+        maskCtx.lineTo(pts[i][0] - minX, pts[i][1] - minY);
+      }
+      maskCtx.closePath();
+      maskCtx.fill();
+    } else {
+      const maskImgData = maskCtx.createImageData(w, h);
+      const data = maskImgData.data;
+      const pixels = currentSelection.pixels || [];
+      for (let i = 0; i < pixels.length; i++) {
+        const [px, py] = pixels[i];
+        const lx = Math.round(px - minX);
+        const ly = Math.round(py - minY);
+        if (lx >= 0 && lx < w && ly >= 0 && ly < h) {
+          const idx = (ly * w + lx) * 4;
+          data[idx] = 0;
+          data[idx + 1] = 0;
+          data[idx + 2] = 0;
+          data[idx + 3] = 255;
+        }
+      }
+      maskCtx.putImageData(maskImgData, 0, 0);
+    }
+
     const maskDataUrl = maskCanvas.toDataURL('image/png');
 
-    // Create the normal photo element with the mask applied
     const newElement = {
       id: 'photo_' + Date.now(),
       type: 'photo',
-      x: minX,
-      y: minY,
-      width: w || 100,
-      height: h || 100,
+      x: Math.round(minX),
+      y: Math.round(minY),
+      width: w,
+      height: h,
       backgroundColor: '#e2e8f0',
-      borderRadius: 0,
+      borderRadius: currentSelection.type === 'circle' ? 50 : 0,
       zIndex: getNextZIndex(), 
-      isBackgroundLayer: false, // Normal layer now!
-      maskImage: maskDataUrl, // The base64 shape mask
+      isBackgroundLayer: false,
+      maskImage: currentSelection.type === 'rectangle' ? null : maskDataUrl,
     };
     
     updateElementsWithHistory([...elements, newElement]);
@@ -342,36 +387,42 @@ export default function ProEditor({
     }
 
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    currentSelection.pixels.forEach(([x, y]) => {
-      if (x < minX) minX = x;
-      if (y < minY) minY = y;
-      if (x > maxX) maxX = x;
-      if (y > maxY) maxY = y;
-    });
+    if (currentSelection.bounds) {
+      minX = currentSelection.bounds.x;
+      minY = currentSelection.bounds.y;
+      maxX = minX + currentSelection.bounds.width;
+      maxY = minY + currentSelection.bounds.height;
+    } else if (currentSelection.pixels && currentSelection.pixels.length > 0) {
+      for (let i = 0; i < currentSelection.pixels.length; i++) {
+        const [x, y] = currentSelection.pixels[i];
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+    }
 
-    const w = maxX - minX;
-    const h = maxY - minY;
+    if (!isFinite(minX) || !isFinite(minY) || maxX <= minX || maxY <= minY) {
+      toast.error("Selection area is empty. Please select a text area first.");
+      return;
+    }
 
-    const maskCanvas = document.createElement('canvas');
-    maskCanvas.width = w + 1;
-    maskCanvas.height = h + 1;
-    const maskCtx = maskCanvas.getContext('2d');
-    maskCtx.fillStyle = '#000000';
-    currentSelection.pixels.forEach(([x, y]) => {
-      maskCtx.fillRect(x - minX, y - minY, 1, 1);
-    });
-    const maskDataUrl = maskCanvas.toDataURL('image/png');
+    const w = Math.max(100, Math.round(maxX - minX));
+    const h = Math.max(40, Math.round(maxY - minY));
+
+    // Dynamic, proportional font size based on selection dimensions
+    const computedFontSize = Math.min(64, Math.max(16, Math.floor(h * 0.38)));
 
     const newElement = {
       id: 'text_' + Date.now(),
       type: 'text',
-      x: minX,
-      y: minY,
-      width: w || 200,
-      height: h || 80,
+      x: Math.round(minX),
+      y: Math.round(minY),
+      width: w,
+      height: h,
       text: 'Tap to Edit',
       color: '#ffffff',
-      fontSize: Math.max(12, Math.floor((h || 80) * 0.8)),
+      fontSize: computedFontSize,
       fontFamily: '"Montserrat", sans-serif',
       textAlign: 'center',
       opacity: 1,
@@ -389,7 +440,6 @@ export default function ProEditor({
       shadowBlur: 4,
       shadowOffsetX: 0,
       shadowOffsetY: 2,
-      maskImage: maskDataUrl, // The base64 shape mask for text
     };
     
     updateElementsWithHistory([...elements, newElement]);
@@ -587,6 +637,8 @@ export default function ProEditor({
             {/* Background canvas (renders bg image or color) */}
             <canvas
               ref={studioCanvasRef}
+              width={canvasWidth}
+              height={canvasHeight}
               className="absolute inset-0 w-full h-full block pointer-events-none"
               style={{ display: 'block', zIndex: 10 }}
             />
@@ -594,6 +646,8 @@ export default function ProEditor({
             {/* INTERACTIVE OVERLAY CANVAS (FOR SELECTION TOOLS) */}
             <canvas
               ref={selectionOverlayRef}
+              width={canvasWidth}
+              height={canvasHeight}
               className={`absolute inset-0 w-full h-full block ${editTab === 'select' ? 'pointer-events-auto cursor-crosshair' : 'pointer-events-none'}`}
               style={{ display: 'block', zIndex: 50 }}
             />

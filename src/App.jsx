@@ -1,10 +1,11 @@
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import { signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, collection, getDocs, query, orderBy, limit, where } from 'firebase/firestore';
 import { auth, googleProvider, db } from './config/firebase';
 import toast, { Toaster } from 'react-hot-toast';
 import { Rocket, Flame, Leaf, Smartphone, Palette } from 'lucide-react';
+import { getSafeImageUrl } from './utils/imageLoader';
 
 // ==========================================
 // 🚀 ENTERPRISE LAZY LOADING
@@ -83,7 +84,7 @@ function HomePage() {
   }, []);
 
   // --- SECRET OWNER PORTAL TRIGGER ---
-  const [clickCount, setClickCount] = useState(0);
+  const [_clickCount, setClickCount] = useState(0);
   const clickTimerRef = useRef(null);
   const handleSecretClick = () => {
     setClickCount(prev => {
@@ -112,75 +113,77 @@ function HomePage() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col">
       {/* SMART STICKY HEADER */}
-      <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5'}`}>
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="text-2xl font-black text-indigo-600 tracking-tighter cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
+      <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-2.5 sm:py-3' : 'bg-transparent py-3.5 sm:py-5'}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center gap-2">
+          <div className="text-xl sm:text-2xl font-black text-indigo-600 tracking-tighter cursor-pointer select-none" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             Camp<span className="text-slate-800">Send</span>
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/auth')} className="bg-slate-900 text-white px-5 py-2 rounded-lg font-medium hover:bg-slate-800 transition shadow-sm hover:-translate-y-0.5 flex items-center gap-2 text-sm">
-              <Smartphone className="w-4 h-4" /> Client Login
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button onClick={() => navigate('/auth')} className="bg-slate-900 text-white px-3 sm:px-5 py-2 rounded-lg font-medium hover:bg-slate-800 transition shadow-sm hover:-translate-y-0.5 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm active:scale-95 shrink-0">
+              <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400" />
+              <span>Client Login</span>
             </button>
-            <button onClick={() => navigate('/designer-portal')} className="bg-indigo-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-indigo-700 transition shadow-sm hover:-translate-y-0.5 flex items-center gap-2 text-sm">
-              <Palette className="w-4 h-4" /> Designer Portal
+            <button onClick={() => navigate('/designer-portal')} className="bg-indigo-600 text-white px-3 sm:px-5 py-2 rounded-lg font-medium hover:bg-indigo-700 transition shadow-sm hover:-translate-y-0.5 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm active:scale-95 shrink-0">
+              <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-200" />
+              <span className="hidden xs:inline">Designer</span> Portal
             </button>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col pt-20">
+      <main className="flex-1 flex flex-col pt-16 sm:pt-20">
         {/* HERO SECTION */}
-        <section className="px-6 max-w-6xl mx-auto w-full text-center py-20 md:py-28 animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 font-bold px-4 py-1.5 rounded-full text-sm mb-6 border border-indigo-100">
-            <Rocket className="w-4 h-4" /> The #1 Platform for User-Generated Campaigns
+        <section className="px-4 sm:px-6 max-w-6xl mx-auto w-full text-center py-12 sm:py-20 md:py-28 animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 font-bold px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm mb-6 border border-indigo-100 max-w-full truncate">
+            <Rocket className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600 shrink-0" /> <span className="truncate">The #1 Platform for User-Generated Campaigns</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-slate-900 leading-tight">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold mb-5 sm:mb-6 tracking-tight text-slate-900 leading-[1.15]">
             Scale Your <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-purple-600">Viral Message</span>
           </h1>
-          <h2 className="text-xl md:text-2xl text-slate-600 max-w-3xl mx-auto mb-10 font-medium leading-relaxed">
+          <h2 className="text-base sm:text-xl md:text-2xl text-slate-600 max-w-3xl mx-auto mb-8 sm:mb-10 font-medium leading-relaxed px-2">
             Empower local people with a mobile-first custom poster maker. Automate photo framing, track your reach, and drive massive awareness through instant WhatsApp sharing right from any smartphone.
           </h2>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button onClick={() => navigate('/auth')} className="w-full sm:w-auto bg-slate-900 text-white font-bold text-lg py-3 px-10 rounded-xl shadow-sm hover:bg-slate-800 transition-all active:scale-95">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-2">
+            <button onClick={() => navigate('/auth')} className="w-full sm:w-auto bg-slate-900 text-white font-bold text-base sm:text-lg py-3.5 px-8 sm:px-10 rounded-xl shadow-sm hover:bg-slate-800 transition-all active:scale-95">
               Start Building Free
             </button>
           </div>
         </section>
 
         {/* LIVE CAMPAIGNS GALLERY */}
-        <section className="bg-white border-y border-slate-200 py-20 relative overflow-hidden">
+        <section className="bg-white border-y border-slate-200 py-14 sm:py-20 relative overflow-hidden">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-indigo-50 rounded-full blur-3xl -z-10 opacity-50"></div>
 
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800">Trending Community Campaigns</h2>
-              <p className="text-slate-500 font-medium mt-3 max-w-2xl mx-auto">Click any live campaign below to experience the generator engine in action.</p>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-10 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-800">Trending Community Campaigns</h2>
+              <p className="text-slate-500 font-medium mt-2 sm:mt-3 max-w-2xl mx-auto text-sm sm:text-base">Click any live campaign below to experience the generator engine in action.</p>
             </div>
 
             {isLoading ? (
               <div className="flex justify-center items-center py-10 text-indigo-600 font-bold animate-pulse">Loading viral network...</div>
             ) : publicCampaigns.length === 0 ? (
-              <div className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-12 text-center max-w-2xl mx-auto">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100"><Leaf className="w-8 h-8 text-emerald-500" /></div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2">The platform is ready</h3>
+              <div className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-8 sm:p-12 text-center max-w-2xl mx-auto">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100"><Leaf className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-500" /></div>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-2">The platform is ready</h3>
                 <p className="text-slate-500 text-sm">Log in, create a campaign, and check "Feature on Homepage" to see it here!</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {publicCampaigns.map(camp => (
-                  <article key={camp.id} onClick={() => window.open(`/generator?id=${camp.id}`, '_blank')} className="group bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer duration-300">
-                    <div className="h-64 bg-slate-100 relative overflow-hidden">
-                      <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url(${camp.backgroundImage})` }}></div>
+                  <article key={camp.id} onClick={() => window.open(`/generator?id=${camp.id}`, '_blank')} className="group bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col hover:shadow-2xl hover:-translate-y-1.5 transition-all cursor-pointer duration-300">
+                    <div className="h-56 sm:h-64 bg-slate-100 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url(${getSafeImageUrl(camp.backgroundImage)})` }}></div>
                       <div className="absolute inset-0 bg-linear-to-t from-slate-900/90 via-slate-900/20 to-transparent"></div>
-                      <div className="absolute bottom-5 left-5 right-5 flex justify-between items-end">
+                      <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5 flex justify-between items-end">
                         <span className="bg-white/90 backdrop-blur-md text-slate-800 text-xs font-bold px-3 py-1.5 rounded-md shadow-sm flex items-center gap-1.5">
                           <Flame className="w-3.5 h-3.5 text-orange-500" /> {camp.postersGenerated || 0} Generated
                         </span>
-                        <div className="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">→</div>
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg transform translate-y-2 sm:translate-y-4 opacity-90 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 transition-all duration-300">→</div>
                       </div>
                     </div>
-                    <div className="p-5">
-                      <h3 className="font-bold text-xl text-slate-800 mb-1 truncate">{camp.title}</h3>
+                    <div className="p-4 sm:p-5">
+                      <h3 className="font-bold text-lg sm:text-xl text-slate-800 mb-1 truncate">{camp.title}</h3>
                       <p className="text-xs font-bold text-slate-400 truncate uppercase tracking-wider">By {camp.ownerEmail}</p>
                     </div>
                   </article>
@@ -191,22 +194,22 @@ function HomePage() {
         </section>
 
         {/* PLATFORM TEMPLATES GALLERY */}
-        <section className="bg-slate-50 border-b border-slate-200 py-20 relative overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800">Premium Master Templates</h2>
-              <p className="text-slate-500 font-medium mt-3 max-w-2xl mx-auto">Start with a professional layout. Fully customizable in the Pro Studio.</p>
+        <section className="bg-slate-50 border-b border-slate-200 py-14 sm:py-20 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-10 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-800">Premium Master Templates</h2>
+              <p className="text-slate-500 font-medium mt-2 sm:mt-3 max-w-2xl mx-auto text-sm sm:text-base">Start with a professional layout. Fully customizable in the Pro Studio.</p>
             </div>
 
             {isLoading ? (
               <div className="flex justify-center items-center py-10 text-indigo-600 font-bold animate-pulse">Loading templates...</div>
             ) : platformTemplates.length === 0 ? (
-              <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center max-w-2xl mx-auto">
+              <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-8 sm:p-12 text-center max-w-2xl mx-auto">
                 <span className="text-4xl mb-4 block">🖼️</span>
-                <p className="text-slate-500 font-medium">New templates are being designed and will be available soon.</p>
+                <p className="text-slate-500 font-medium text-sm sm:text-base">New templates are being designed and will be available soon.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-6">
                 {platformTemplates.map(template => (
                   <div
                     key={template.id}
@@ -215,22 +218,22 @@ function HomePage() {
                       toast('Taking you to the Studio...', { icon: '✨' });
                       navigate(`/auth?template=${template.id}`);
                     }}
-                    className="bg-white border border-slate-200 rounded-2xl p-3 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col"
+                    className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-2.5 sm:p-3 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col active:scale-98"
                   >
-                    <div className="aspect-3/4 bg-slate-100 rounded-xl mb-3 overflow-hidden relative">
-                      <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url(${template.backgroundImage})` }}></div>
+                    <div className="aspect-3/4 bg-slate-100 rounded-lg sm:rounded-xl mb-2 sm:mb-3 overflow-hidden relative">
+                      <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url(${getSafeImageUrl(template.backgroundImage)})` }}></div>
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 backdrop-blur-[2px]">
-                        <span className="bg-white text-indigo-600 font-bold text-sm px-4 py-2 rounded-lg shadow-lg">Use Template</span>
+                        <span className="bg-white text-indigo-600 font-bold text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-lg">Use Template</span>
                       </div>
                     </div>
-                    <h3 className="font-bold text-sm text-slate-800 text-center truncate px-2 mb-1">{template.title}</h3>
+                    <h3 className="font-bold text-xs sm:text-sm text-slate-800 text-center truncate px-1 mb-0.5">{template.title}</h3>
                   </div>
                 ))}
               </div>
             )}
 
-            <div className="text-center mt-12">
-              <button onClick={() => navigate('/auth')} className="bg-white border border-slate-300 text-slate-700 px-8 py-3 rounded-xl font-bold hover:bg-slate-100 transition shadow-sm">
+            <div className="text-center mt-8 sm:mt-12">
+              <button onClick={() => navigate('/auth')} className="w-full sm:w-auto bg-white border border-slate-300 text-slate-700 px-8 py-3 rounded-xl font-bold hover:bg-slate-100 transition shadow-sm active:scale-95">
                 View All Templates
               </button>
             </div>
@@ -331,23 +334,99 @@ function AuthPage() {
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
+  // Ensure localhost is used instead of 127.0.0.1 (Firebase Auth allows localhost by default)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hostname === '127.0.0.1') {
+      window.location.hostname = 'localhost';
+    }
+  }, []);
+
+  // 1. If already logged in, navigate immediately to Dashboard
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        navigate('/dashboard' + queryParams);
+      }
+    });
+    return () => unsub();
+  }, [navigate, queryParams]);
+
+  // 2. Handle Google Sign-in redirect result (critical for mobile browsers & cookie restrictions)
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result && result.user) {
+          try {
+            await setDoc(doc(db, "users", result.user.uid), {
+              firmName: result.user.displayName || "Google User",
+              email: result.user.email,
+              createdAt: serverTimestamp()
+            }, { merge: true });
+          } catch (e) {
+            console.warn("Could not sync redirect profile to firestore:", e);
+          }
+          toast.success('Welcome to CampSend!', { duration: 3000 });
+          navigate('/dashboard' + queryParams);
+        }
+      })
+      .catch((error) => {
+        if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+          console.error("Redirect auth error:", error);
+        }
+      });
+  }, [navigate, queryParams]);
+
   const handleGoogleAuth = async () => {
     setAuthLoading(true);
     try {
-      const { user } = await signInWithPopup(auth, googleProvider);
-      await setDoc(doc(db, "users", user.uid), {
-        firmName: user.displayName || "Google User", email: user.email, createdAt: serverTimestamp()
-      }, { merge: true });
-      toast.success('Welcome to CampSend!', { duration: 3000 });
+      let user = null;
+      try {
+        const res = await signInWithPopup(auth, googleProvider);
+        user = res.user;
+      } catch (popupError) {
+        // Safe handling for user cancellation
+        if (popupError.code === 'auth/popup-closed-by-user' || popupError.code === 'auth/cancelled-popup-request') {
+          return;
+        }
+        // Fallback to redirect on mobile, popup-blocked, or cross-site cookie restrictions
+        if (
+          popupError.code === 'auth/popup-blocked' ||
+          popupError.code === 'auth/network-request-failed' ||
+          popupError.code === 'auth/internal-error'
+        ) {
+          toast.loading('Switching to Google Sign-In redirect...', { duration: 3000 });
+          await signInWithRedirect(auth, googleProvider);
+          return;
+        }
+        // Domain authorization help
+        if (popupError.code === 'auth/unauthorized-domain') {
+          toast.error("Domain unauthorized. Please add " + window.location.hostname + " to Firebase Console -> Authorized Domains.", { duration: 6000 });
+          return;
+        }
+        throw popupError;
+      }
 
-      // 🚀 Pass the query params to the Dashboard so it knows to clone the template
-      navigate('/dashboard' + queryParams);
-    }
-    catch (error) {
+      if (user) {
+        // Safe profile creation - don't crash if Firestore rules or offline delay it
+        try {
+          await setDoc(doc(db, "users", user.uid), {
+            firmName: user.displayName || "Google User",
+            email: user.email,
+            createdAt: serverTimestamp()
+          }, { merge: true });
+        } catch (dbErr) {
+          console.warn("Could not sync user profile to firestore:", dbErr);
+        }
+
+        toast.success('Welcome to CampSend!', { duration: 3000 });
+        navigate('/dashboard' + queryParams);
+      }
+    } catch (error) {
       console.error("Google Auth Error:", error);
-      toast.error("Google sign-in failed: " + error.message);
+      toast.error("Google sign-in failed: " + (error.message || 'Please try again.'));
+    } finally {
+      setAuthLoading(false);
     }
-    finally { setAuthLoading(false); }
   };
 
   const handleEmailAuth = async (e) => {
@@ -396,49 +475,49 @@ function AuthPage() {
     try {
       await sendPasswordResetEmail(auth, email);
       toast.success('Password reset email sent. Check your inbox.');
-    } catch (err) {
+    } catch (_err) {
       toast.error('Unable to send reset email.');
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-200 rounded-full blur-3xl opacity-50"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-200 rounded-full blur-3xl opacity-50"></div>
+    <div className="min-h-[100dvh] bg-slate-50 flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-200 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-200 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
 
-      <div className="bg-white p-8 md:p-10 rounded-2xl shadow-xl w-full max-w-md relative z-10 border border-slate-100">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">{isLoginMode ? "Welcome Back" : "Register Firm"}</h2>
-          <button onClick={() => navigate('/')} className="text-slate-400 font-bold hover:text-slate-800 transition bg-slate-50 w-10 h-10 rounded-full flex items-center justify-center">✕</button>
+      <div className="bg-white p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl shadow-xl w-full max-w-md relative z-10 border border-slate-100">
+        <div className="flex justify-between items-center mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{isLoginMode ? "Welcome Back" : "Register Firm"}</h2>
+          <button onClick={() => navigate('/')} className="text-slate-400 font-bold hover:text-slate-800 transition bg-slate-50 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base">✕</button>
         </div>
 
-        <button onClick={handleGoogleAuth} disabled={authLoading} className="w-full bg-white border-2 border-slate-200 text-slate-700 font-bold text-lg py-4 rounded-xl flex flex-row items-center justify-center gap-3 hover:bg-slate-50 hover:border-slate-300 transition-all mb-8 disabled:opacity-50 active:scale-95">
+        <button onClick={handleGoogleAuth} disabled={authLoading} className="w-full bg-white border-2 border-slate-200 text-slate-700 font-bold text-base sm:text-lg py-3.5 sm:py-4 rounded-xl flex flex-row items-center justify-center gap-3 hover:bg-slate-50 hover:border-slate-300 transition-all mb-6 sm:mb-8 disabled:opacity-50 active:scale-95">
           <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>
           Continue with Google
         </button>
 
-        <div className="flex items-center gap-4 mb-8"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-xs font-black uppercase tracking-widest">OR EMAIL</span><div className="h-px bg-slate-200 flex-1"></div></div>
+        <div className="flex items-center gap-4 mb-6 sm:mb-8"><div className="h-px bg-slate-200 flex-1"></div><span className="text-slate-400 text-xs font-black uppercase tracking-widest">OR EMAIL</span><div className="h-px bg-slate-200 flex-1"></div></div>
 
-        <form onSubmit={handleEmailAuth} className="flex flex-col gap-4">
+        <form onSubmit={handleEmailAuth} className="flex flex-col gap-3.5 sm:gap-4">
           {!isLoginMode && (
-            <div className="animate-in fade-in slide-in-from-top-2 duration-300 flex flex-col gap-4">
-              <input type="text" placeholder="Firm / Organization Name" value={firmName} onChange={(e) => setFirmName(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-medium text-slate-900 transition-all" />
-              <input type="tel" placeholder="WhatsApp / Mobile Number (e.g. +91...)" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-medium text-slate-900 transition-all" />
+            <div className="animate-in fade-in slide-in-from-top-2 duration-300 flex flex-col gap-3.5 sm:gap-4">
+              <input type="text" placeholder="Firm / Organization Name" value={firmName} onChange={(e) => setFirmName(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-medium text-slate-900 text-base transition-all" />
+              <input type="tel" placeholder="WhatsApp Number with Country Code (e.g. +1, +44, +91...)" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-medium text-slate-900 text-base transition-all" />
             </div>
           )}
-          <input type="email" placeholder="Organization Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-medium transition-all" />
-          <input type="password" placeholder="Password (Min 6 chars)" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-medium transition-all" />
-          <div className="flex justify-between items-center">
-            <button type="button" onClick={handlePasswordReset} className="text-sm text-indigo-600 hover:underline">Forgot password?</button>
+          <input type="email" placeholder="Organization Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-medium text-base transition-all" />
+          <input type="password" placeholder="Password (Min 6 chars)" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 font-medium text-base transition-all" />
+          <div className="flex justify-between items-center pt-1">
+            <button type="button" onClick={handlePasswordReset} className="text-xs sm:text-sm text-indigo-600 hover:underline">Forgot password?</button>
             <div />
           </div>
 
-          <button type="submit" disabled={authLoading} className="w-full bg-slate-900 text-white font-medium text-base py-3.5 rounded-lg mt-4 shadow-sm hover:bg-slate-800 disabled:opacity-70 disabled:translate-y-0 transition-all active:scale-95">
+          <button type="submit" disabled={authLoading} className="w-full bg-slate-900 text-white font-medium text-base py-3.5 rounded-lg mt-2 sm:mt-4 shadow-sm hover:bg-slate-800 disabled:opacity-70 disabled:translate-y-0 transition-all active:scale-95">
             {authLoading ? "Processing..." : (isLoginMode ? "Enter Dashboard" : "Register Account")}
           </button>
         </form>
 
-        <p className="text-center mt-8 text-slate-500 font-medium">
+        <p className="text-center mt-6 sm:mt-8 text-slate-500 font-medium text-xs sm:text-sm">
           {isLoginMode ? "Is your firm new here?" : "Already have a firm account?"}
           <button type="button" onClick={() => { setIsLoginMode(!isLoginMode); setFirmName(''); setPhone(''); }} className="text-indigo-600 font-black hover:underline ml-2">
             {isLoginMode ? "Register" : "Log In"}
@@ -465,6 +544,7 @@ export default function App() {
             <Route path="/generator" element={<Generator />} />
             <Route path="/owner-portal" element={<Admin />} />
             <Route path="/designer-portal" element={<DesignerPortal />} />
+            <Route path="/designer" element={<DesignerPortal />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

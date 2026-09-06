@@ -5,6 +5,7 @@ import { db } from '../config/firebase';
 import toast from 'react-hot-toast';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { loadCanvasSafeImage } from '../utils/imageLoader';
 
 function Generator() {
   const [searchParams] = useSearchParams();
@@ -28,8 +29,11 @@ function Generator() {
   const [crop, setCrop] = useState();
   const [completedCrop, setCompletedCrop] = useState();
 
+  // --- MOBILE VIEW STATE ---
+  const [mobileTab, setMobileTab] = useState('customize'); // 'customize' | 'preview'
+
   // ==========================================
-  // FETCH CAMPAIGN & RECORD VIEW
+  // FETCH CAMPAIGN DATA FROM FIRESTORE
   // ==========================================
   useEffect(() => {
     if (!campaignId) { setTimeout(() => { setError("Invalid campaign link."); setIsLoading(false); }, 0); return; }
@@ -45,29 +49,31 @@ function Generator() {
 
           updateDoc(docRef, { views: increment(1) }).catch(() => { });
 
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          img.src = data.backgroundImage;
-          img.onload = async () => {
-            setBgObj(img);
+          try {
+            const bgImage = await loadCanvasSafeImage(data.backgroundImage);
+            setBgObj(bgImage);
 
             // Load masks if any
             const newMasks = {};
             if (data.elements) {
               const maskPromises = data.elements
                 .filter(el => el.maskImage)
-                .map(el => new Promise((resolve) => {
-                  const mImg = new Image();
-                  mImg.src = el.maskImage;
-                  mImg.onload = () => { newMasks[el.id] = mImg; resolve(); };
-                  mImg.onerror = () => resolve();
-                }));
+                .map(async (el) => {
+                  try {
+                    const mImg = await loadCanvasSafeImage(el.maskImage);
+                    newMasks[el.id] = mImg;
+                  } catch (_e) {
+                    // Safe skip if mask fails
+                  }
+                });
               await Promise.all(maskPromises);
             }
             setMaskObjs(newMasks);
             setIsLoading(false);
-          };
-          img.onerror = () => { setError("Failed to load campaign artwork."); setIsLoading(false); };
+          } catch (_imgErr) {
+            setError("Failed to load campaign artwork.");
+            setIsLoading(false);
+          }
         } else {
           setError("Campaign not found or has been removed.");
           setIsLoading(false);
@@ -123,9 +129,12 @@ function Generator() {
   useEffect(() => {
     if (!campaign || !bgObj || !canvasRef.current) return;
 
-    // 🚀 NEW: The Font Race Condition Lock!
-    // This forces the Canvas to wait until Google Fonts are fully loaded before drawing.
-    document.fonts.ready.then(() => {
+    // 🚀 NEW: The Font Race Condition Lock with 1.5s timeout!
+    // Prevents hanging canvas rendering in countries where Google Fonts CDN is slow or blocked
+    const fontPromise = document.fonts ? document.fonts.ready : Promise.resolve();
+    const timeoutPromise = new Promise(resolve => setTimeout(resolve, 1500));
+
+    Promise.race([fontPromise, timeoutPromise]).then(() => {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d', { alpha: false });
 
@@ -386,51 +395,102 @@ function Generator() {
   if (error) return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-red-500 font-bold text-xl flex-col gap-4"><span>⚠️</span> {error}</div>;
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] flex flex-col font-sans">
+    <div className="min-h-[100dvh] bg-[#F1F5F9] flex flex-col font-sans">
 
       {/* HEADER */}
-      <header className="bg-white border-b border-slate-200 py-4 px-6 flex justify-between items-center shadow-sm z-10 relative">
+      <header className="bg-white border-b border-slate-200 py-3 sm:py-4 px-4 sm:px-6 flex justify-between items-center shadow-xs z-30 relative shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-600/30">
+          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-md shadow-indigo-600/30">
             <span className="text-white font-black text-lg leading-none">C</span>
           </div>
-          <div className="text-xl font-black text-slate-800 tracking-tight">Camp<span className="text-indigo-600">Send</span></div>
+          <div className="text-lg sm:text-xl font-black text-slate-800 tracking-tight">Camp<span className="text-indigo-600">Send</span></div>
         </div>
-        <div className="text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-lg">Public Generator</div>
+        <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest bg-slate-100 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200/60">Public Generator</div>
       </header>
 
+      {/* MOBILE SEGMENTED VIEW SWITCHER (Visible only on mobile/tablets < 1024px) */}
+      <div className="lg:hidden bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-2 flex items-center justify-center sticky top-0 z-20 shrink-0 shadow-xs">
+        <div className="bg-slate-100 p-1 rounded-xl flex w-full max-w-sm">
+          <button
+            type="button"
+            onClick={() => setMobileTab('customize')}
+            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${mobileTab === 'customize' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+          >
+            <span>✏️</span> Customize
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab('preview')}
+            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${mobileTab === 'preview' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+          >
+            <span>👁️</span> Live Preview
+          </button>
+        </div>
+      </div>
+
       {/* MAIN GENERATOR LAYOUT */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative pb-28 lg:pb-0">
 
         {/* LEFT: LIVE CANVAS PREVIEW */}
-        <div className="flex-[1.5] bg-slate-100 p-6 lg:p-12 flex flex-col items-center justify-center overflow-auto relative">
-          <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#4f46e5_1px,transparent_1px)] bg-size-[20px_20px]"></div>
+        <div className={`flex-[1.5] bg-slate-100 p-4 sm:p-6 lg:p-12 flex-col items-center justify-center overflow-auto relative ${mobileTab === 'preview' ? 'flex' : 'hidden lg:flex'}`}>
+          <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#4f46e5_1px,transparent_1px)] bg-size-[20px_20px] pointer-events-none"></div>
 
-          <div className="w-full max-w-md shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-lg overflow-hidden bg-white relative z-10 border border-slate-200" style={{ aspectRatio: `${campaign.canvasWidth || 800} / ${campaign.canvasHeight || 1066}` }}>
-            <canvas ref={canvasRef} width={campaign.canvasWidth || 800} height={campaign.canvasHeight || 1066} className="w-full h-full object-cover" />
+          <div className="w-full max-w-[340px] sm:max-w-md shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-xl sm:rounded-2xl overflow-hidden bg-white relative z-10 border border-slate-200 ring-1 ring-slate-900/5 transition-transform" style={{ aspectRatio: `${campaign.canvasWidth || 800} / ${campaign.canvasHeight || 1066}` }}>
+            <canvas ref={canvasRef} width={campaign.canvasWidth || 800} height={campaign.canvasHeight || 1066} className="w-full h-full object-cover block" />
+          </div>
+
+          {/* Quick toggle hint for mobile */}
+          <div className="lg:hidden mt-4 z-10">
+            <button
+              onClick={() => setMobileTab('customize')}
+              className="bg-white/90 backdrop-blur border border-slate-200 text-slate-700 font-bold text-xs px-4 py-2 rounded-full shadow-sm flex items-center gap-1.5 active:scale-95 transition"
+            >
+              <span>✏️</span> Edit Poster Details
+            </button>
           </div>
         </div>
 
         {/* RIGHT: USER INPUT FORM */}
-        <div className="w-full lg:w-112.5 bg-white border-t lg:border-t-0 lg:border-l border-slate-200 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] lg:shadow-none flex flex-col z-20 h-auto lg:h-full shrink-0 relative">
+        <div className={`w-full lg:w-112.5 bg-white border-t lg:border-t-0 lg:border-l border-slate-200 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] lg:shadow-none flex-col z-10 h-auto lg:h-full shrink-0 relative ${mobileTab === 'customize' ? 'flex' : 'hidden lg:flex'}`}>
 
-          <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar">
-            <h1 className="text-2xl font-black text-slate-800 mb-2 leading-tight">{campaign.title}</h1>
-            <p className="text-sm font-medium text-slate-500 mb-8">Fill in the fields below to customize your poster. The preview will update instantly.</p>
+          <div className="p-4 sm:p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar">
+            <div className="flex justify-between items-start mb-2">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-800 leading-tight">{campaign.title}</h1>
+              {/* Mobile quick peek badge */}
+              <button
+                type="button"
+                onClick={() => setMobileTab('preview')}
+                className="lg:hidden text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100 flex items-center gap-1 shrink-0 ml-2"
+              >
+                <span>👁️</span> Preview
+              </button>
+            </div>
+            <p className="text-xs sm:text-sm font-medium text-slate-500 mb-6 sm:mb-8">Fill in the fields below to customize your poster. The preview updates instantly.</p>
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4 sm:gap-6">
               {[...(campaign.elements || [])].filter(el => el.type !== 'shape').sort((a, b) => a.y - b.y).map((el, i) => (
-                <div key={el.id} className="bg-slate-50 p-5 rounded-2xl border border-slate-100 transition-all focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-200">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <div key={el.id} className="bg-slate-50 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-100 transition-all focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-200">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 sm:mb-3 flex items-center gap-2">
                     <span className="w-5 h-5 bg-indigo-100 text-indigo-600 rounded flex items-center justify-center text-[10px]">{i + 1}</span>
                     {el.type === 'text' ? 'Your Text' : 'Your Photo'}
                   </label>
 
                   {el.type === 'text' ? (
-                    <input type="text" placeholder={el.text} value={inputs[el.id] || ''} onChange={(e) => setInputs({ ...inputs, [el.id]: e.target.value })} className="w-full p-4 bg-white border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none shadow-sm transition-shadow" />
+                    <input
+                      type="text"
+                      placeholder={el.text}
+                      value={inputs[el.id] || ''}
+                      onChange={(e) => setInputs({ ...inputs, [el.id]: e.target.value })}
+                      className="w-full p-3 sm:p-4 bg-white border border-slate-200 rounded-xl font-bold text-slate-800 text-base focus:outline-none shadow-xs transition-shadow"
+                    />
                   ) : (
-                    <button onClick={() => document.getElementById(`file-${el.id}`).click()} className={`w-full p-4 bg-white border ${photos[el.id] ? 'border-emerald-200 text-emerald-600' : 'border-slate-200 text-indigo-600 hover:border-indigo-200'} rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2`}>
-                      <span>{photos[el.id] ? '✅' : '📸'}</span> {photos[el.id] ? 'Photo Attached (Tap to Change)' : 'Upload Your Photo'}
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById(`file-${el.id}`).click()}
+                      className={`w-full p-3.5 sm:p-4 bg-white border ${photos[el.id] ? 'border-emerald-300 text-emerald-600 bg-emerald-50/20' : 'border-slate-200 text-indigo-600 hover:border-indigo-200'} rounded-xl font-bold transition-colors shadow-xs flex items-center justify-center gap-2 text-sm sm:text-base active:scale-98`}
+                    >
+                      <span>{photos[el.id] ? '✅' : '📸'}</span>
+                      <span className="truncate">{photos[el.id] ? 'Photo Attached (Tap to Change)' : 'Upload Your Photo'}</span>
                       <input id={`file-${el.id}`} type="file" accept="image/*" onChange={(e) => { if (e.target.files[0]) { setCropEl(el); setImgSrc(URL.createObjectURL(e.target.files[0])); } }} className="hidden" />
                     </button>
                   )}
@@ -439,44 +499,60 @@ function Generator() {
             </div>
           </div>
 
-          {/* VIRAL SHARE & DOWNLOAD AREA */}
-          <div className="p-6 bg-slate-50 border-t border-slate-200 shrink-0 flex flex-col gap-3">
-
-            <button onClick={handleShare} className="w-full py-4 bg-linear-to-r from-[#25D366] to-[#128C7E] text-white font-black text-lg rounded-xl shadow-[0_8px_20px_-4px_rgba(37,211,102,0.4)] hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-3">
-              <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
+          {/* DESKTOP VIRAL SHARE & DOWNLOAD AREA */}
+          <div className="hidden lg:flex p-6 bg-slate-50 border-t border-slate-200 shrink-0 flex-col gap-3">
+            <button onClick={handleShare} className="w-full py-3.5 bg-linear-to-r from-[#25D366] to-[#128C7E] text-white font-black text-base rounded-xl shadow-[0_8px_20px_-4px_rgba(37,211,102,0.4)] hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
               Share to WhatsApp
             </button>
-
-            <button onClick={handleDownload} className="w-full py-4 bg-white border border-slate-300 text-slate-700 font-bold text-md rounded-xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <button onClick={handleDownload} className="w-full py-3 bg-white border border-slate-300 text-slate-700 font-bold text-sm rounded-xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2 cursor-pointer">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
               Just Download Image
             </button>
-
-            <p className="text-center text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Powered by CampSend</p>
+            <p className="text-center text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Powered by CampSend</p>
           </div>
         </div>
+      </div>
+
+      {/* MOBILE STICKY DOCK ACTION BAR (Always visible & easily accessible on mobile) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2.5 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.08)] z-40 flex items-center gap-2.5">
+        <button
+          onClick={handleShare}
+          className="flex-1 py-3 bg-linear-to-r from-[#25D366] to-[#128C7E] text-white font-black text-sm rounded-xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
+          <span className="truncate">Share on WhatsApp</span>
+        </button>
+
+        <button
+          onClick={handleDownload}
+          className="p-3 bg-white border border-slate-300 text-slate-700 font-bold rounded-xl active:scale-95 transition-all shadow-xs flex items-center justify-center shrink-0"
+          title="Download Image"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        </button>
       </div>
 
       {/* ========================================== */}
       {/* PHOTO CROP MODAL                             */}
       {/* ========================================== */}
       {imgSrc && cropEl && (
-        <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center z-60 p-4">
-          <div className="bg-white p-5 md:p-8 rounded-4xl shadow-2xl w-full max-w-lg flex flex-col h-[85vh] md:h-auto overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-100">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-black text-slate-800 tracking-tight">Frame Photo</h3>
-              <button onClick={() => { setCropEl(null); setImgSrc(null); }} className="w-10 h-10 bg-slate-50 hover:bg-red-50 hover:text-red-500 text-slate-500 rounded-full flex items-center justify-center font-bold text-xl transition-colors">✕</button>
+        <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center z-60 p-3 sm:p-4">
+          <div className="bg-white p-4 sm:p-6 md:p-8 rounded-3xl sm:rounded-4xl shadow-2xl w-full max-w-lg flex flex-col max-h-[92dvh] overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-100">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h3 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">Frame Photo</h3>
+              <button onClick={() => { setCropEl(null); setImgSrc(null); }} className="w-9 h-9 sm:w-10 sm:h-10 bg-slate-50 hover:bg-red-50 hover:text-red-500 text-slate-500 rounded-full flex items-center justify-center font-bold text-lg sm:text-xl transition-colors">✕</button>
             </div>
 
-            <div className="flex-1 bg-slate-100 rounded-2xl overflow-hidden relative flex items-center justify-center p-2 mb-6 border border-slate-200 shadow-inner">
+            <div className="flex-1 bg-slate-100 rounded-xl sm:rounded-2xl overflow-hidden relative flex items-center justify-center p-2 mb-4 sm:mb-6 border border-slate-200 shadow-inner min-h-[220px]">
               <ReactCrop crop={crop} onChange={c => setCrop(c)} onComplete={c => setCompletedCrop(c)} aspect={dynamicAspect}>
-                <img ref={imgRef} src={imgSrc} onLoad={onImgLoad} className="max-h-[50vh] object-contain rounded" alt="Crop Target" />
+                <img ref={imgRef} src={imgSrc} onLoad={onImgLoad} className="max-h-[48dvh] object-contain rounded" alt="Crop Target" />
               </ReactCrop>
             </div>
 
-            <div className="flex gap-3">
-              <button onClick={() => { setCropEl(null); setImgSrc(null); }} className="flex-1 py-4 border border-slate-200 bg-white text-slate-600 rounded-xl font-bold shadow-sm hover:bg-slate-50 transition-colors">Cancel</button>
-              <button onClick={finishCrop} disabled={!completedCrop} className="flex-2 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-[0_8px_20px_-4px_rgba(79,70,229,0.4)] disabled:opacity-50 active:scale-95 transition-all">Apply Crop</button>
+            <div className="flex gap-2.5 sm:gap-3 pb-safe">
+              <button onClick={() => { setCropEl(null); setImgSrc(null); }} className="flex-1 py-3 sm:py-3.5 border border-slate-200 bg-white text-slate-600 rounded-xl font-bold text-sm sm:text-base shadow-xs hover:bg-slate-50 transition-colors active:scale-95">Cancel</button>
+              <button onClick={finishCrop} disabled={!completedCrop} className="flex-2 py-3 sm:py-3.5 bg-indigo-600 text-white rounded-xl font-bold text-sm sm:text-base shadow-md disabled:opacity-50 active:scale-95 transition-all">Apply Crop</button>
             </div>
           </div>
         </div>

@@ -500,34 +500,35 @@ export default function ProEditor({
       {/* ==============================
           HEADER
       ============================== */}
-      <div className="bg-white px-3 md:px-6 py-3 border-b border-slate-200 flex justify-between items-center shadow-sm shrink-0 gap-2">
-        <div className="flex items-center gap-2 min-w-0">
+      <div className="bg-white px-2.5 sm:px-4 md:px-6 py-2 sm:py-3 border-b border-slate-200 flex justify-between items-center shadow-xs shrink-0 gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 sm:flex-none">
           <button
             onClick={onClose}
-            className="w-9 h-9 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full flex items-center justify-center font-bold transition shrink-0 text-lg"
+            className="w-8 h-8 sm:w-9 sm:h-9 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full flex items-center justify-center font-bold transition shrink-0 text-base sm:text-lg active:scale-95"
+            title="Back to Dashboard"
           >←</button>
           <input
             type="text"
             value={campaignTitle}
             onChange={(e) => setCampaignTitle(e.target.value)}
-            className="font-black text-slate-800 text-base md:text-lg outline-none bg-transparent hover:bg-slate-50 focus:bg-slate-50 px-2 py-1 rounded min-w-0 w-32 md:w-56"
+            className="font-black text-slate-800 text-sm sm:text-base md:text-lg outline-none bg-transparent hover:bg-slate-50 focus:bg-slate-50 px-1.5 sm:px-2 py-1 rounded min-w-0 w-full sm:w-48 md:w-56"
             placeholder="Campaign Title..."
           />
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Undo/Redo */}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-100 p-0.5 sm:p-1 rounded-lg">
             <button
               onClick={handleUndo}
               disabled={historyIndex === 0}
-              className="w-8 h-8 flex items-center justify-center rounded text-slate-600 hover:bg-white hover:shadow-sm disabled:opacity-30 transition-all"
+              className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded text-slate-600 hover:bg-white hover:shadow-xs disabled:opacity-30 transition-all text-xs sm:text-sm active:scale-95"
               title="Undo (Ctrl+Z)"
             >↩</button>
             <button
               onClick={handleRedo}
               disabled={historyIndex === history.length - 1}
-              className="w-8 h-8 flex items-center justify-center rounded text-slate-600 hover:bg-white hover:shadow-sm disabled:opacity-30 transition-all"
+              className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded text-slate-600 hover:bg-white hover:shadow-xs disabled:opacity-30 transition-all text-xs sm:text-sm active:scale-95"
               title="Redo (Ctrl+Y)"
             >↪</button>
           </div>
@@ -697,7 +698,7 @@ export default function ProEditor({
         <div className="w-full md:w-80 bg-white border-t md:border-l border-slate-200 flex flex-col h-[45vh] md:h-full z-20 shrink-0 overflow-hidden">
 
           {/* Tab bar */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 bg-slate-50 shrink-0 gap-2 overflow-x-auto">
+          <div className="flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 border-b border-slate-100 bg-slate-50 shrink-0 gap-2 overflow-x-auto no-scrollbar touch-scroll">
             {!selectedId ? (
               <div className="flex gap-1 bg-slate-200/60 p-0.5 rounded-lg shrink-0">
                 {[
@@ -710,12 +711,12 @@ export default function ProEditor({
                   <button
                     key={t.id}
                     onClick={() => setEditTab(t.id)}
-                    className={`text-[10px] font-black uppercase px-2 py-1.5 rounded-md whitespace-nowrap transition-colors ${editTab === t.id ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1.5 rounded-md whitespace-nowrap transition-colors active:scale-95 ${editTab === t.id ? 'bg-white shadow-xs text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
                   >{t.label}</button>
                 ))}
               </div>
             ) : (
-              <div className="flex gap-1 bg-slate-200/60 p-0.5 rounded-lg overflow-x-auto shrink-0">
+              <div className="flex gap-1 bg-slate-200/60 p-0.5 rounded-lg overflow-x-auto no-scrollbar shrink-0 touch-scroll">
                 {[
                   ...(selectedElement?.type === 'text' ? [{ id: 'text', label: '✏️ Text' }] : []),
                   { id: 'style', label: '🎨 Style' },
@@ -726,7 +727,7 @@ export default function ProEditor({
                   <button
                     key={t.id}
                     onClick={() => setEditTab(t.id)}
-                    className={`text-[10px] font-black uppercase px-2 py-1.5 rounded-md whitespace-nowrap transition-colors ${editTab === t.id ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`text-[10px] sm:text-xs font-black uppercase px-2.5 py-1.5 rounded-md whitespace-nowrap transition-colors active:scale-95 ${editTab === t.id ? 'bg-white shadow-xs text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
                   >{t.label}</button>
                 ))}
               </div>
@@ -735,7 +736,8 @@ export default function ProEditor({
             {selectedElement && (
               <button
                 onClick={() => deleteElement(selectedId)}
-                className="text-red-500 text-xs font-bold px-2 py-1.5 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                className="text-red-500 text-xs font-bold px-2 py-1.5 hover:bg-red-50 rounded-lg transition-colors shrink-0 active:scale-95"
+                title="Delete layer"
               >🗑️</button>
             )}
           </div>

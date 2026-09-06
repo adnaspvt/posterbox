@@ -101,41 +101,7 @@ export default function SelectionTools({
     }
   };
 
-  // Display selection on overlay canvas
-  useEffect(() => {
-    const targetOverlayCanvas = externalOverlayCanvasRef?.current || overlayCanvasRef.current;
-    if (!currentSelection || !targetOverlayCanvas) return;
-
-    const canvas = targetOverlayCanvas;
-    const imageData = getImageDataFromCanvas();
-
-    if (!imageData) return;
-
-    canvas.width = imageData.width;
-    canvas.height = imageData.height;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw selection mask
-    const mask = generateSelectionMask(currentSelection, imageData.width, imageData.height);
-    const displayImageData = ctx.createImageData(imageData.width, imageData.height);
-
-    for (let i = 0; i < mask.length; i++) {
-      if (mask[i] > 0) {
-        displayImageData.data[i * 4] = 100;
-        displayImageData.data[i * 4 + 1] = 180;
-        displayImageData.data[i * 4 + 2] = 255;
-        displayImageData.data[i * 4 + 3] = 100;
-      }
-    }
-
-    ctx.putImageData(displayImageData, 0, 0);
-
-    // Draw marching ants border
-    drawMarchingAnts(ctx, currentSelection, canvas.width, canvas.height);
-  }, [currentSelection]);
-
-  const drawMarchingAnts = (ctx, selection, width, height) => {
+  const drawMarchingAnts = (ctx, selection) => {
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.setLineDash([5, 5]);
@@ -155,6 +121,40 @@ export default function SelectionTools({
       ctx.stroke();
     }
   };
+
+  // Display selection on overlay canvas
+  useEffect(() => {
+    const targetOverlayCanvas = externalOverlayCanvasRef?.current || overlayCanvasRef.current;
+    if (!currentSelection || !targetOverlayCanvas) return;
+
+    const imageData = getImageDataFromCanvas();
+    if (!imageData) return;
+
+    // eslint-disable-next-line react-hooks/immutability
+    targetOverlayCanvas.width = imageData.width;
+    // eslint-disable-next-line react-hooks/immutability
+    targetOverlayCanvas.height = imageData.height;
+    const ctx = targetOverlayCanvas.getContext('2d');
+    ctx.clearRect(0, 0, targetOverlayCanvas.width, targetOverlayCanvas.height);
+
+    // Draw selection mask
+    const mask = generateSelectionMask(currentSelection, imageData.width, imageData.height);
+    const displayImageData = ctx.createImageData(imageData.width, imageData.height);
+
+    for (let i = 0; i < mask.length; i++) {
+      if (mask[i] > 0) {
+        displayImageData.data[i * 4] = 100;
+        displayImageData.data[i * 4 + 1] = 180;
+        displayImageData.data[i * 4 + 2] = 255;
+        displayImageData.data[i * 4 + 3] = 100;
+      }
+    }
+
+    ctx.putImageData(displayImageData, 0, 0);
+
+    // Draw marching ants border
+    drawMarchingAnts(ctx, currentSelection);
+  }, [currentSelection]);
 
   const handleMagicWand = (e) => {
     const imageData = getImageDataFromCanvas();

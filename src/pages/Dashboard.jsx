@@ -14,6 +14,7 @@ import TeamManagement from '../components/TeamManagement';
 import AdvancedAnalytics from '../components/AdvancedAnalytics';
 import CampaignTemplatesLibrary from '../components/CampaignTemplatesLibrary';
 import ProEditor from '../components/ProEditor';
+import { getSafeImageUrl } from '../utils/imageLoader';
 
 // --- PREMIUM FONTS ---
 const FONT_FAMILIES = [
@@ -111,24 +112,48 @@ function Dashboard() {
   const fetchDashboardData = async (email) => {
     setIsFetching(true);
     try {
-      const q = query(collection(db, "campaigns"), where("ownerEmail", "==", email));
-      const querySnapshot = await getDocs(q);
-      setCampaigns(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+      // 1. Core user campaigns
+      try {
+        const q = query(collection(db, "campaigns"), where("ownerEmail", "==", email));
+        const querySnapshot = await getDocs(q);
+        setCampaigns(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+      } catch (campErr) {
+        console.warn('Campaigns query error:', campErr);
+      }
 
-      const tempSnap = await getDocs(collection(db, "templates"));
-      setPlatformTemplates(tempSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+      // 2. Platform templates
+      try {
+        const tempSnap = await getDocs(collection(db, "templates"));
+        setPlatformTemplates(tempSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+      } catch (tempErr) {
+        console.warn('Templates query error:', tempErr);
+      }
 
-      const usersSnap = await getDocs(collection(db, "users"));
-      setDesigners(usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(u => u.isDesigner === true && u.designerStatus === 'active'));
+      // 3. Available designers (safe check)
+      try {
+        const usersSnap = await getDocs(collection(db, "users"));
+        setDesigners(usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(u => u.isDesigner === true && u.designerStatus === 'active'));
+      } catch (_usersErr) {
+        // Safe silence if client rules restrict listing all user documents
+      }
 
-      const configDoc = await getDoc(doc(db, "settings", "platform"));
-      if (configDoc.exists()) setWhatsappNumber(configDoc.data().whatsappNumber || '');
+      // 4. Platform settings (safe check)
+      try {
+        const configDoc = await getDoc(doc(db, "settings", "platform"));
+        if (configDoc.exists()) setWhatsappNumber(configDoc.data().whatsappNumber || '');
+      } catch (_settingsErr) {
+        // Safe silence if settings read is restricted
+      }
 
-      const reqsSnap = await getDocs(query(collection(db, "designRequests"), where("clientEmail", "==", email)));
-      setMyRequests(reqsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+      // 5. Client design requests (safe check)
+      try {
+        const reqsSnap = await getDocs(query(collection(db, "designRequests"), where("clientEmail", "==", email)));
+        setMyRequests(reqsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+      } catch (_reqsErr) {
+        // Safe silence
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      toast.error("Error loading campaigns. Please refresh the page.");
     }
     finally { setIsFetching(false); setIsLoading(false); }
   };
@@ -448,33 +473,33 @@ function Dashboard() {
               </div>
             </div>
           </div>
-          <button onClick={() => navigate('/designer')} className="w-full py-2.5 mb-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm"><Sparkles className="w-4 h-4" /> Designer Portal</button>
-          <button onClick={handleLogout} className="w-full py-2.5 text-slate-500 bg-white border border-slate-200 hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm"><LogOut className="w-4 h-4" /> Sign Out</button>
+          <button onClick={() => navigate('/designer-portal')} className="w-full py-2.5 mb-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm active:scale-98"><Sparkles className="w-4 h-4 text-indigo-500" /> Designer Portal</button>
+          <button onClick={handleLogout} className="w-full py-2.5 text-slate-500 bg-white border border-slate-200 hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm active:scale-98"><LogOut className="w-4 h-4" /> Sign Out</button>
         </div>
       </aside>
 
-      {/* Mobile Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 z-50 flex overflow-x-auto items-center px-2 py-2 pb-safe shadow-sm no-scrollbar">
-        <button onClick={() => setActiveView('overview')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'overview' ? 'text-slate-900' : 'text-slate-400'}`}><LayoutDashboard className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Campaigns</span></button>
-        <button onClick={() => setActiveView('analytics')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'analytics' ? 'text-slate-900' : 'text-slate-400'}`}><LineChart className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Analytics</span></button>
-        <button onClick={() => setActiveView('templates')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'templates' ? 'text-slate-900' : 'text-slate-400'}`}><ImageIcon className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Templates</span></button>
-        <button onClick={() => setActiveView('branding')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'branding' ? 'text-slate-900' : 'text-slate-400'}`}><PaintBucket className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Branding</span></button>
-        <button onClick={() => setActiveView('team')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'team' ? 'text-slate-900' : 'text-slate-400'}`}><Users className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Team</span></button>
-        <button onClick={() => setActiveView('designer')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'designer' ? 'text-slate-900' : 'text-slate-400'}`}><Sparkles className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Designer</span></button>
-        <button onClick={() => setActiveView('requests')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'requests' ? 'text-slate-900' : 'text-slate-400'}`}><Inbox className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Requests</span></button>
-        <button onClick={() => setActiveView('settings')} className={`flex flex-col items-center p-2 rounded-lg min-w-16 ${activeView === 'settings' ? 'text-slate-900' : 'text-slate-400'}`}><Settings className="w-5 h-5 mb-1" /><span className="text-[9px] font-medium">Settings</span></button>
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-50 flex overflow-x-auto items-center px-2 py-1.5 pb-safe shadow-[0_-4px_16px_rgba(0,0,0,0.06)] no-scrollbar touch-scroll">
+        <button onClick={() => setActiveView('overview')} className={`flex flex-col items-center py-1.5 px-3 rounded-xl min-w-16 transition-all shrink-0 ${activeView === 'overview' ? 'text-indigo-600 bg-indigo-50/80 font-bold' : 'text-slate-400 hover:text-slate-600'}`}><LayoutDashboard className="w-4.5 h-4.5 mb-1" /><span className="text-[10px]">Campaigns</span></button>
+        <button onClick={() => setActiveView('analytics')} className={`flex flex-col items-center py-1.5 px-3 rounded-xl min-w-16 transition-all shrink-0 ${activeView === 'analytics' ? 'text-indigo-600 bg-indigo-50/80 font-bold' : 'text-slate-400 hover:text-slate-600'}`}><LineChart className="w-4.5 h-4.5 mb-1" /><span className="text-[10px]">Analytics</span></button>
+        <button onClick={() => setActiveView('templates')} className={`flex flex-col items-center py-1.5 px-3 rounded-xl min-w-16 transition-all shrink-0 ${activeView === 'templates' ? 'text-indigo-600 bg-indigo-50/80 font-bold' : 'text-slate-400 hover:text-slate-600'}`}><ImageIcon className="w-4.5 h-4.5 mb-1" /><span className="text-[10px]">Templates</span></button>
+        <button onClick={() => setActiveView('branding')} className={`flex flex-col items-center py-1.5 px-3 rounded-xl min-w-16 transition-all shrink-0 ${activeView === 'branding' ? 'text-indigo-600 bg-indigo-50/80 font-bold' : 'text-slate-400 hover:text-slate-600'}`}><PaintBucket className="w-4.5 h-4.5 mb-1" /><span className="text-[10px]">Branding</span></button>
+        <button onClick={() => setActiveView('team')} className={`flex flex-col items-center py-1.5 px-3 rounded-xl min-w-16 transition-all shrink-0 ${activeView === 'team' ? 'text-indigo-600 bg-indigo-50/80 font-bold' : 'text-slate-400 hover:text-slate-600'}`}><Users className="w-4.5 h-4.5 mb-1" /><span className="text-[10px]">Team</span></button>
+        <button onClick={() => setActiveView('designer')} className={`flex flex-col items-center py-1.5 px-3 rounded-xl min-w-16 transition-all shrink-0 ${activeView === 'designer' ? 'text-indigo-600 bg-indigo-50/80 font-bold' : 'text-slate-400 hover:text-slate-600'}`}><Sparkles className="w-4.5 h-4.5 mb-1" /><span className="text-[10px]">Designer</span></button>
+        <button onClick={() => setActiveView('requests')} className={`flex flex-col items-center py-1.5 px-3 rounded-xl min-w-16 transition-all shrink-0 ${activeView === 'requests' ? 'text-indigo-600 bg-indigo-50/80 font-bold' : 'text-slate-400 hover:text-slate-600'}`}><Inbox className="w-4.5 h-4.5 mb-1" /><span className="text-[10px]">Requests</span></button>
+        <button onClick={() => setActiveView('settings')} className={`flex flex-col items-center py-1.5 px-3 rounded-xl min-w-16 transition-all shrink-0 ${activeView === 'settings' ? 'text-indigo-600 bg-indigo-50/80 font-bold' : 'text-slate-400 hover:text-slate-600'}`}><Settings className="w-4.5 h-4.5 mb-1" /><span className="text-[10px]">Settings</span></button>
       </nav>
 
       <main className="flex-1 flex flex-col h-full overflow-y-auto relative scroll-smooth bg-slate-50/50">
         {activeView !== 'studio' && (
-          <header className="md:hidden bg-white/80 backdrop-blur-md border-b border-slate-200 py-3 px-5 flex justify-between items-center sticky top-0 z-40">
+          <header className="md:hidden bg-white/90 backdrop-blur-md border-b border-slate-200 py-3 px-4 sm:px-5 flex justify-between items-center sticky top-0 z-40">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-slate-900 rounded flex items-center justify-center"><span className="text-white font-bold text-xs">C</span></div>
+              <div className="w-7 h-7 bg-slate-900 rounded-md flex items-center justify-center"><span className="text-white font-bold text-xs">C</span></div>
               <div className="text-lg font-bold text-slate-900 tracking-tight">Camp<span className="text-slate-400">Send</span></div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <NotificationBell userId={user?.uid} />
-              <button onClick={() => navigate('/designer')} className="text-[10px] font-medium uppercase tracking-wider bg-slate-100 text-slate-600 px-3 py-1.5 rounded-md border border-slate-200 shadow-sm flex items-center gap-1"><Sparkles className="w-3 h-3" /> Portal</button>
+              <button onClick={() => navigate('/designer-portal')} className="text-[11px] font-bold tracking-wider bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 shadow-xs flex items-center gap-1 active:scale-95"><Sparkles className="w-3 h-3 text-indigo-600" /> Portal</button>
             </div>
           </header>
         )}
@@ -497,7 +522,7 @@ function Dashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {campaigns.map(camp => (
                   <div key={camp.id} className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-5 hover:shadow-md transition-all duration-300 group">
-                    <div className="w-full sm:w-32 h-48 sm:h-32 bg-slate-100 rounded-lg relative overflow-hidden shrink-0"><div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style={{ backgroundImage: `url(${camp.backgroundImage})` }}></div><div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div></div>
+                    <div className="w-full sm:w-32 h-48 sm:h-32 bg-slate-100 rounded-lg relative overflow-hidden shrink-0"><div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style={{ backgroundImage: `url(${getSafeImageUrl(camp.backgroundImage)})` }}></div><div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors"></div></div>
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
                         <div className="flex justify-between items-start mb-2">
@@ -557,7 +582,7 @@ function Dashboard() {
                         <span className="text-xs font-bold text-slate-900">{template.rating ? template.rating.toFixed(1) : "5.0"}</span>
                       </div>
                       <div onClick={() => handleUseMasterTemplate(template)} className="aspect-3/4 bg-slate-100 rounded-xl mb-3 overflow-hidden relative cursor-pointer">
-                        <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url(${template.backgroundImage})` }}></div>
+                        <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700" style={{ backgroundImage: `url(${getSafeImageUrl(template.backgroundImage)})` }}></div>
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"><span className="bg-white text-indigo-600 font-bold text-sm px-4 py-2 rounded-lg shadow-lg">Use Template</span></div>
                       </div>
                       <div className="flex justify-between items-center px-1 mb-1">
@@ -712,7 +737,7 @@ function Dashboard() {
                 <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2"><Building className="w-5 h-5 text-slate-400" /> Firm Details</h2>
                 <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
                   <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Organization Name</label><input type="text" value={editFirmName} onChange={(e) => setEditFirmName(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all" /></div>
-                  <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">WhatsApp / Mobile Number</label><input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all" placeholder="e.g. +91 9876543210" /></div>
+                  <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">WhatsApp / Mobile Number</label><input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none transition-all" placeholder="e.g. +1 555 123 4567 or +91 9876543210" /></div>
                   <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Registered Email</label><input type="email" value={user?.email || ''} disabled className="w-full p-3.5 bg-slate-100 border border-slate-200 rounded-lg font-medium text-slate-400 cursor-not-allowed" /></div>
 
                   <div className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-lg mt-2">

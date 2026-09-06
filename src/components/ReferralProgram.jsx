@@ -3,8 +3,7 @@ import toast from 'react-hot-toast';
 
 export default function ReferralProgram() {
   const [copied, setCopied] = useState(false);
-
-  const referralLink = `https://CampSend1.web.app?ref=${typeof window !== 'undefined' ? 'CampSend_' + Math.random().toString(36).substring(7).toUpperCase() : 'CampSend'}`;
+  const [referralLink] = useState(() => `https://CampSend1.web.app?ref=${typeof window !== 'undefined' ? 'CampSend_' + Math.random().toString(36).substring(7).toUpperCase() : 'CampSend'}`);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(referralLink);

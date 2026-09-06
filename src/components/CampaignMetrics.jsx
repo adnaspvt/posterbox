@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit, where } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
 export default function CampaignMetrics() {
@@ -30,7 +30,7 @@ export default function CampaignMetrics() {
           totalReach: totalViews,
           avgEngagement: totalPosters > 0 ? (totalPosters / campaignData.length).toFixed(0) : 0
         });
-      } catch (error) {
+      } catch (_error) {
         console.log('Campaign metrics loading...');
       }
     };

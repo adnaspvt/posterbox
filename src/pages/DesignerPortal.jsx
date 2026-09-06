@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail, signInWithPopup } from 'firebase/auth';
+import { onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail, signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, getDoc, query, where, serverTimestamp, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db, IMGBB_API_KEY, googleProvider } from '../config/firebase';
 import toast from 'react-hot-toast';
@@ -397,11 +397,29 @@ function DesignerPortal() {
     setIsAuthenticating(true);
     const toastId = toast.loading('Connecting to Google...');
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      await loadDesignerState(result.user);
-      toast.success('Signed in successfully', { id: toastId });
+      let user = null;
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        user = result.user;
+      } catch (popupError) {
+        if (popupError.code === 'auth/popup-closed-by-user' || popupError.code === 'auth/cancelled-popup-request') {
+          toast.dismiss(toastId);
+          return;
+        }
+        if (popupError.code === 'auth/popup-blocked') {
+          toast.loading('Redirecting to Google Sign-In...', { id: toastId });
+          await signInWithRedirect(auth, googleProvider);
+          return;
+        }
+        throw popupError;
+      }
+
+      if (user) {
+        await loadDesignerState(user);
+        toast.success('Signed in successfully', { id: toastId });
+      }
     } catch (error) {
-      toast.error('Google sign-in failed. Please try again.', { id: toastId });
+      toast.error('Google sign-in failed: ' + (error.message || 'Please try again.'), { id: toastId });
     } finally {
       setIsAuthenticating(false);
     }
@@ -724,7 +742,7 @@ function DesignerPortal() {
                   />
                   <input
                     type="tel"
-                    placeholder="WhatsApp Number (e.g. +91 9876543210)"
+                    placeholder="WhatsApp with Country Code (e.g. +1..., +44..., +91...)"
                     value={signupData.whatsapp}
                     onChange={(e) => setSignupData({ ...signupData, whatsapp: e.target.value })}
                     className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
@@ -823,25 +841,25 @@ function DesignerPortal() {
     <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
       <header className="bg-slate-900/80 backdrop-blur border-b border-slate-700 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="bg-indigo-500/20 p-2 rounded-lg border border-indigo-500/30"><Palette className="w-6 h-6 text-indigo-400" /></div>
-            <div>
-              <h1 className="font-bold text-white text-lg">Designer Portal</h1>
-              <p className="text-xs text-slate-400 font-medium">{designer?.name}</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="bg-indigo-500/20 p-2 rounded-lg border border-indigo-500/30 shrink-0"><Palette className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-400" /></div>
+            <div className="min-w-0">
+              <h1 className="font-bold text-white text-base sm:text-lg truncate">Designer Portal</h1>
+              <p className="text-[11px] sm:text-xs text-slate-400 font-medium truncate">{designer?.name}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <NotificationBell userId={currentUser?.uid} />
             <button
               onClick={() => navigate('/dashboard')}
-              className="bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white font-medium px-4 py-2 rounded-lg transition mr-2 flex items-center gap-2 text-sm border border-slate-700"
+              className="bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white font-medium px-3 sm:px-4 py-2 rounded-lg transition flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm border border-slate-700 active:scale-95"
             >
-              <ArrowLeft className="w-4 h-4" /> Client Dashboard
+              <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Client </span>Dashboard
             </button>
             <button
               onClick={handleLogout}
-              className="bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2 rounded-lg transition"
+              className="bg-slate-700 hover:bg-slate-600 text-white font-bold px-3 sm:px-4 py-2 rounded-lg transition text-xs sm:text-sm active:scale-95"
             >
               Logout
             </button>
@@ -849,14 +867,14 @@ function DesignerPortal() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          <div className="bg-linear-to-br from-indigo-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group">
-            <p className="text-sm font-bold opacity-80 mb-2">Total Earnings</p>
-            <p className="text-4xl font-black">₹{earnings.totalEarnings.toLocaleString()}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
+          <div className="bg-linear-to-br from-indigo-600 to-indigo-700 rounded-2xl p-5 sm:p-6 text-white shadow-lg relative overflow-hidden group">
+            <p className="text-xs sm:text-sm font-bold opacity-80 mb-2">Total Earnings</p>
+            <p className="text-3xl sm:text-4xl font-black">₹{earnings.totalEarnings.toLocaleString()}</p>
             {earnings.availablePayout > 0 && (
-              <button onClick={handleRequestPayout} className="mt-4 bg-white text-indigo-700 font-bold px-4 py-2 rounded-lg text-sm hover:bg-indigo-50 transition w-full shadow-sm">
+              <button onClick={handleRequestPayout} className="mt-4 bg-white text-indigo-700 font-bold px-4 py-2 rounded-lg text-xs sm:text-sm hover:bg-indigo-50 transition w-full shadow-sm active:scale-95">
                 Withdraw ₹{earnings.availablePayout.toLocaleString()}
               </button>
             )}
@@ -864,22 +882,22 @@ function DesignerPortal() {
               <p className="mt-4 text-xs font-bold bg-indigo-800/50 py-2 rounded-lg text-center">Fully Paid Out (₹{earnings.paidOut.toLocaleString()})</p>
             )}
           </div>
-          <div className="bg-linear-to-br from-emerald-600 to-emerald-700 rounded-2xl p-6 text-white shadow-lg">
-            <p className="text-sm font-bold opacity-80 mb-2">This Month</p>
-            <p className="text-4xl font-black">₹{earnings.monthlyEarnings.toLocaleString()}</p>
+          <div className="bg-linear-to-br from-emerald-600 to-emerald-700 rounded-2xl p-5 sm:p-6 text-white shadow-lg">
+            <p className="text-xs sm:text-sm font-bold opacity-80 mb-2">This Month</p>
+            <p className="text-3xl sm:text-4xl font-black">₹{earnings.monthlyEarnings.toLocaleString()}</p>
           </div>
-          <div className="bg-linear-to-br from-purple-600 to-purple-700 rounded-2xl p-6 text-white shadow-lg">
-            <p className="text-sm font-bold opacity-80 mb-2">Templates Created</p>
-            <p className="text-4xl font-black">{earnings.templatesCreated || templates.length}</p>
+          <div className="bg-linear-to-br from-purple-600 to-purple-700 rounded-2xl p-5 sm:p-6 text-white shadow-lg">
+            <p className="text-xs sm:text-sm font-bold opacity-80 mb-2">Templates Created</p>
+            <p className="text-3xl sm:text-4xl font-black">{earnings.templatesCreated || templates.length}</p>
           </div>
-          <div className="bg-linear-to-br from-pink-600 to-pink-700 rounded-2xl p-6 text-white shadow-lg">
-            <p className="text-sm font-bold opacity-80 mb-2">Total Sales</p>
-            <p className="text-4xl font-black">{earnings.templatesSold}</p>
+          <div className="bg-linear-to-br from-pink-600 to-pink-700 rounded-2xl p-5 sm:p-6 text-white shadow-lg">
+            <p className="text-xs sm:text-sm font-bold opacity-80 mb-2">Total Sales</p>
+            <p className="text-3xl sm:text-4xl font-black">{earnings.templatesSold}</p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-8 border-b border-slate-700/50 overflow-x-auto pb-4 no-scrollbar">
+        <div className="flex gap-2 mb-6 sm:mb-8 border-b border-slate-700/50 overflow-x-auto pb-3 sm:pb-4 no-scrollbar touch-scroll">
           {[
             { id: 'templates', label: 'My Templates', icon: LayoutTemplate },
             { id: 'portfolio', label: 'Portfolio Builder', icon: ImageIcon },

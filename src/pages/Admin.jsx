@@ -83,12 +83,24 @@ function Admin() {
     setIsAuthenticating(true);
     const toastId = toast.loading('Verifying Google Account...', { style: { background: '#020617', color: '#10b981' } });
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      if (result.user.email !== MASTER_EMAIL) {
-        await signOut(auth);
-        toast.error("ACCESS DENIED. Unauthorized Google Account.", { id: toastId, style: { background: '#7f1d1d', color: '#fff' } });
-      } else {
-        toast.success('System Unlocked via Google.', { id: toastId, style: { background: '#020617', color: '#10b981' } });
+      let result = null;
+      try {
+        result = await signInWithPopup(auth, googleProvider);
+      } catch (popupError) {
+        if (popupError.code === 'auth/popup-closed-by-user' || popupError.code === 'auth/cancelled-popup-request') {
+          toast.dismiss(toastId);
+          return;
+        }
+        throw popupError;
+      }
+
+      if (result && result.user) {
+        if (result.user.email !== MASTER_EMAIL) {
+          await signOut(auth);
+          toast.error("ACCESS DENIED. Unauthorized Google Account.", { id: toastId, style: { background: '#7f1d1d', color: '#fff' } });
+        } else {
+          toast.success('System Unlocked via Google.', { id: toastId, style: { background: '#020617', color: '#10b981' } });
+        }
       }
     } catch (error) {
       toast.error(error.message || 'Google Sign In failed.', { id: toastId, style: { background: '#7f1d1d', color: '#fff' } });
@@ -184,7 +196,7 @@ function Admin() {
   // CRM TOOLS: DESIGN REQUESTS & WHATSAPP
   // ==========================================
   const handleWhatsAppContact = (request) => {
-    const phone = window.prompt(`Enter WhatsApp number for ${request.firmName} (Include country code, e.g. 919876543210):`, request.clientPhone && request.clientPhone !== 'Not Provided' ? request.clientPhone : "+91");
+    const phone = window.prompt(`Enter WhatsApp number for ${request.firmName} (Include country code, e.g. 15551234567 or 919876543210):`, request.clientPhone && request.clientPhone !== 'Not Provided' ? request.clientPhone : "+");
     if (!phone) return;
     const message = encodeURIComponent(`Hi ${request.firmName}, this is the CampSend Design Team! We received your request regarding: "${request.subject}". How can we assist you with this design today?`);
     window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
@@ -337,7 +349,7 @@ function Admin() {
   };
 
 
-  const forceDeleteTemplate = async (id) => { if (!window.confirm(`Delete this master template?`)) return; try { await deleteDoc(doc(db, "templates", id)); setAllTemplates(allTemplates.filter(t => t.id !== id)); toast.success(`Template deleted.`); } catch (e) { } };
+  const forceDeleteTemplate = async (id) => { if (!window.confirm(`Delete this master template?`)) return; try { await deleteDoc(doc(db, "templates", id)); setAllTemplates(allTemplates.filter(t => t.id !== id)); toast.success(`Template deleted.`); } catch (e) { console.error('Delete template error:', e); toast.error('Failed to delete template'); } };
 
   // ==========================================
   // RENDER UI: SECURE LOCK SCREEN
@@ -385,10 +397,28 @@ function Admin() {
   const pendingPayouts = payoutRequests.filter(req => req.status === 'pending').length;
 
   return (
-    <div className="min-h-screen bg-slate-950 flex font-sans text-slate-300">
+    <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row font-sans text-slate-300">
 
-      {/* SIDEBAR */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 z-50">
+      {/* MOBILE HEADER & HORIZONTAL TABS */}
+      <div className="md:hidden bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shrink-0">
+        <div className="p-4 flex justify-between items-center">
+          <div className="text-lg font-black text-white tracking-tighter uppercase"><span className="text-emerald-500">C-Send</span> // Admin</div>
+          <button onClick={handleMasterLogout} className="text-red-400 hover:text-red-300 font-mono text-xs font-bold px-2.5 py-1 rounded bg-red-950/30 border border-red-900/50 active:scale-95">Exit</button>
+        </div>
+        <nav className="flex overflow-x-auto gap-2 px-4 pb-3 no-scrollbar font-mono text-xs touch-scroll">
+          <button onClick={() => setActiveTab('overview')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg font-bold shrink-0 ${activeTab === 'overview' ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-900/50' : 'text-slate-500 bg-slate-800/60'}`}>[1] Overview</button>
+          <button onClick={() => setActiveTab('templates')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg font-bold shrink-0 ${activeTab === 'templates' ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-900/50' : 'text-slate-500 bg-slate-800/60'}`}>[2] Studio</button>
+          <button onClick={() => setActiveTab('firms')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg font-bold shrink-0 ${activeTab === 'firms' ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-900/50' : 'text-slate-500 bg-slate-800/60'}`}>[3] Firms</button>
+          <button onClick={() => setActiveTab('campaigns')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg font-bold shrink-0 ${activeTab === 'campaigns' ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-900/50' : 'text-slate-500 bg-slate-800/60'}`}>[4] Campaigns</button>
+          <button onClick={() => setActiveTab('payouts')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg font-bold shrink-0 ${activeTab === 'payouts' ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-900/50' : 'text-slate-500 bg-slate-800/60'}`}>[5] Payouts {pendingPayouts > 0 && `(${pendingPayouts})`}</button>
+          <button onClick={() => setActiveTab('content')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg font-bold shrink-0 ${activeTab === 'content' ? 'bg-indigo-950/80 text-indigo-400 border border-indigo-900/50' : 'text-slate-500 bg-slate-800/60'}`}>[6] Settings</button>
+          <button onClick={() => setActiveTab('contact')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg font-bold shrink-0 ${activeTab === 'contact' ? 'bg-indigo-950/80 text-indigo-400 border border-indigo-900/50' : 'text-slate-500 bg-slate-800/60'}`}>[7] Inbox {pendingRequests > 0 && `(${pendingRequests})`}</button>
+          <button onClick={() => setActiveTab('designers')} className={`whitespace-nowrap px-3 py-1.5 rounded-lg font-bold shrink-0 ${activeTab === 'designers' ? 'bg-indigo-950/80 text-indigo-400 border border-indigo-900/50' : 'text-slate-500 bg-slate-800/60'}`}>[8] Designers</button>
+        </nav>
+      </div>
+
+      {/* DESKTOP SIDEBAR */}
+      <aside className="hidden md:flex w-64 bg-slate-900 border-r border-slate-800 flex-col shrink-0 z-50">
         <div className="p-6 border-b border-slate-800"><div className="text-2xl font-black text-white tracking-tighter uppercase"><span className="text-emerald-500">C-Send</span> // Admin</div></div>
         <nav className="flex-1 p-4 flex flex-col gap-2 font-mono text-sm overflow-y-auto">
           <button onClick={() => setActiveTab('overview')} className={`text-left px-4 py-3 rounded-lg font-bold transition-colors ${activeTab === 'overview' ? 'bg-emerald-950/50 text-emerald-400 border border-emerald-900/50' : 'text-slate-500 hover:bg-slate-800'}`}>[1] Overview</button>
@@ -411,32 +441,52 @@ function Admin() {
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
-        <div className="flex-1 overflow-y-auto p-10">
+      <main className="flex-1 flex flex-col h-full md:h-screen overflow-hidden relative">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-10 pb-20 md:pb-10">
 
-          <div className="flex justify-between items-end mb-10 border-b border-slate-800 pb-6">
-            <div><h1 className="text-4xl font-black text-white tracking-tight">Command Center</h1></div>
-            <button onClick={fetchAllData} disabled={isFetchingData} className="text-emerald-500 bg-emerald-950/30 border border-emerald-900/50 px-4 py-2 rounded-lg font-mono text-sm transition-colors hover:bg-emerald-900/50">↻ Refresh Data</button>
+          <div className="flex flex-col sm:flex-row justify-between sm:items-end mb-6 sm:mb-10 border-b border-slate-800 pb-4 sm:pb-6 gap-3">
+            <div><h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">Command Center</h1></div>
+            <button onClick={fetchAllData} disabled={isFetchingData} className="text-emerald-500 bg-emerald-950/30 border border-emerald-900/50 px-4 py-2 rounded-lg font-mono text-xs sm:text-sm transition-colors hover:bg-emerald-900/50 self-start sm:self-auto active:scale-95">↻ Refresh Data</button>
           </div>
 
           {/* TAB: OVERVIEW */}
           {activeTab === 'overview' && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 animate-in fade-in duration-300">
-              <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800"><p className="text-xs font-mono text-slate-500 uppercase">Total Firms</p><p className="text-5xl font-black text-white mt-2">{allUsers.length}</p></div>
-              <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800"><p className="text-xs font-mono text-slate-500 uppercase">Total Campaigns</p><p className="text-5xl font-black text-white mt-2">{allCampaigns.length}</p></div>
-              <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800"><p className="text-xs font-mono text-slate-500 uppercase">Platform Views</p><p className="text-5xl font-black text-indigo-400 mt-2">{platformViews}</p></div>
-              <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800"><p className="text-xs font-mono text-slate-500 uppercase">Total Downloads</p><p className="text-5xl font-black text-emerald-400 mt-2">{platformPosters}</p></div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-12 animate-in fade-in duration-300">
+              <div className="bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-800"><p className="text-[10px] sm:text-xs font-mono text-slate-500 uppercase">Total Firms</p><p className="text-3xl sm:text-5xl font-black text-white mt-1 sm:mt-2">{allUsers.length}</p></div>
+              <div className="bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-800"><p className="text-[10px] sm:text-xs font-mono text-slate-500 uppercase">Total Campaigns</p><p className="text-3xl sm:text-5xl font-black text-white mt-1 sm:mt-2">{allCampaigns.length}</p></div>
+              <div className="bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-800"><p className="text-[10px] sm:text-xs font-mono text-slate-500 uppercase">Platform Views</p><p className="text-3xl sm:text-5xl font-black text-indigo-400 mt-1 sm:mt-2">{platformViews}</p></div>
+              <div className="bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-800"><p className="text-[10px] sm:text-xs font-mono text-slate-500 uppercase">Total Downloads</p><p className="text-3xl sm:text-5xl font-black text-emerald-400 mt-1 sm:mt-2">{platformPosters}</p></div>
             </div>
           )}
 
           {/* TAB: FIRMS */}
           {activeTab === 'firms' && (
-            <div className="animate-in fade-in duration-300"><h2 className="text-2xl font-bold text-white mb-6">Registered Firms</h2><div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden"><table className="w-full text-left border-collapse"><thead><tr className="bg-slate-950/50 text-slate-500 font-mono text-xs uppercase border-b border-slate-800"><th className="p-4">Firm Name</th><th className="p-4">Email</th><th className="p-4">Phone</th><th className="p-4">Status</th><th className="p-4 text-right">Actions</th></tr></thead><tbody className="divide-y divide-slate-800">{allUsers.map(user => (<tr key={user.id} className="hover:bg-slate-800/50 transition-colors"><td className="p-4 font-bold text-white">{user.firmName}</td><td className="p-4 font-mono text-sm text-slate-400">{user.email}</td><td className="p-4 font-mono text-sm text-slate-400">{user.phone || 'N/A'}</td><td className="p-4"><span className={`text-xs font-bold px-2 py-1 rounded border ${user.status === 'banned' ? 'bg-red-950/30 text-red-500 border-red-900/50' : 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50'}`}>{user.status === 'banned' ? 'BANNED' : 'ACTIVE'}</span></td><td className="p-4 text-right space-x-2"><button onClick={() => sendPasswordReset(user.email)} className="text-xs font-bold bg-indigo-950/30 text-indigo-400 px-3 py-1.5 rounded hover:bg-indigo-900/50 transition-colors">Reset Pass</button><button onClick={() => toggleBanUser(user.id, user.status || 'active', user.firmName)} className="text-xs font-bold bg-orange-950/30 text-orange-400 px-3 py-1.5 rounded hover:bg-orange-900/50 transition-colors">{user.status === 'banned' ? 'Unban' : 'Ban'}</button><button onClick={() => forceDeleteUser(user.id, user.firmName)} className="text-xs font-bold bg-slate-800 text-red-500 px-3 py-1.5 rounded hover:bg-slate-700 transition-colors">Delete</button></td></tr>))}</tbody></table></div></div>
+            <div className="animate-in fade-in duration-300">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Registered Firms</h2>
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left border-collapse min-w-[620px]">
+                    <thead><tr className="bg-slate-950/50 text-slate-500 font-mono text-xs uppercase border-b border-slate-800"><th className="p-4">Firm Name</th><th className="p-4">Email</th><th className="p-4">Phone</th><th className="p-4">Status</th><th className="p-4 text-right">Actions</th></tr></thead>
+                    <tbody className="divide-y divide-slate-800">{allUsers.map(user => (<tr key={user.id} className="hover:bg-slate-800/50 transition-colors"><td className="p-4 font-bold text-white">{user.firmName}</td><td className="p-4 font-mono text-sm text-slate-400">{user.email}</td><td className="p-4 font-mono text-sm text-slate-400">{user.phone || 'N/A'}</td><td className="p-4"><span className={`text-xs font-bold px-2 py-1 rounded border ${user.status === 'banned' ? 'bg-red-950/30 text-red-500 border-red-900/50' : 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50'}`}>{user.status === 'banned' ? 'BANNED' : 'ACTIVE'}</span></td><td className="p-4 text-right space-x-2"><button onClick={() => sendPasswordReset(user.email)} className="text-xs font-bold bg-indigo-950/30 text-indigo-400 px-3 py-1.5 rounded hover:bg-indigo-900/50 transition-colors">Reset Pass</button><button onClick={() => toggleBanUser(user.id, user.status || 'active', user.firmName)} className="text-xs font-bold bg-orange-950/30 text-orange-400 px-3 py-1.5 rounded hover:bg-orange-900/50 transition-colors">{user.status === 'banned' ? 'Unban' : 'Ban'}</button><button onClick={() => forceDeleteUser(user.id, user.firmName)} className="text-xs font-bold bg-slate-800 text-red-500 px-3 py-1.5 rounded hover:bg-slate-700 transition-colors">Delete</button></td></tr>))}</tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* TAB: CAMPAIGNS */}
           {activeTab === 'campaigns' && (
-            <div className="animate-in fade-in duration-300"><h2 className="text-2xl font-bold text-white mb-6">All Campaigns</h2><div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden"><table className="w-full text-left border-collapse"><thead><tr className="bg-slate-950/50 text-slate-500 font-mono text-xs uppercase border-b border-slate-800"><th className="p-4">Campaign Title</th><th className="p-4">Owner Email</th><th className="p-4 text-right">Views</th><th className="p-4 text-right">Actions</th></tr></thead><tbody className="divide-y divide-slate-800">{allCampaigns.map(camp => (<tr key={camp.id} className="hover:bg-slate-800/50 transition-colors"><td className="p-4 font-bold text-white">{camp.title}</td><td className="p-4 font-mono text-sm text-slate-400">{camp.ownerEmail}</td><td className="p-4 text-right font-mono text-indigo-400 font-bold">{camp.views || 0}</td><td className="p-4 text-right space-x-2"><button onClick={() => window.open(`/generator?id=${camp.id}`, '_blank')} className="text-xs font-bold bg-slate-800 text-slate-300 px-3 py-1.5 rounded hover:bg-slate-700 transition-colors">View Live</button><button onClick={() => forceDeleteCampaign(camp.id, camp.title)} className="text-xs font-bold bg-red-950/30 text-red-500 px-3 py-1.5 rounded hover:bg-red-900/50 transition-colors">Kill</button></td></tr>))}</tbody></table></div></div>
+            <div className="animate-in fade-in duration-300">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">All Campaigns</h2>
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left border-collapse min-w-[560px]">
+                    <thead><tr className="bg-slate-950/50 text-slate-500 font-mono text-xs uppercase border-b border-slate-800"><th className="p-4">Campaign Title</th><th className="p-4">Owner Email</th><th className="p-4 text-right">Views</th><th className="p-4 text-right">Actions</th></tr></thead>
+                    <tbody className="divide-y divide-slate-800">{allCampaigns.map(camp => (<tr key={camp.id} className="hover:bg-slate-800/50 transition-colors"><td className="p-4 font-bold text-white">{camp.title}</td><td className="p-4 font-mono text-sm text-slate-400">{camp.ownerEmail}</td><td className="p-4 text-right font-mono text-indigo-400 font-bold">{camp.views || 0}</td><td className="p-4 text-right space-x-2"><button onClick={() => window.open(`/generator?id=${camp.id}`, '_blank')} className="text-xs font-bold bg-slate-800 text-slate-300 px-3 py-1.5 rounded hover:bg-slate-700 transition-colors">View Live</button><button onClick={() => forceDeleteCampaign(camp.id, camp.title)} className="text-xs font-bold bg-red-950/30 text-red-500 px-3 py-1.5 rounded hover:bg-red-900/50 transition-colors">Kill</button></td></tr>))}</tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* TAB: CONTENT MGT (SETTINGS) */}
@@ -473,41 +523,43 @@ function Admin() {
                 </div>
               ) : (
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-950/50 text-slate-500 font-mono text-xs uppercase border-b border-slate-800">
-                        <th className="p-4">Designer</th>
-                        <th className="p-4 text-right">Amount</th>
-                        <th className="p-4">Status</th>
-                        <th className="p-4 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800">
-                      {payoutRequests.map(req => (
-                        <tr key={req.id} className="hover:bg-slate-800/50 transition-colors">
-                          <td className="p-4">
-                            <p className="font-bold text-white">{req.designerName}</p>
-                            <p className="font-mono text-sm text-slate-400">{req.designerEmail}</p>
-                          </td>
-                          <td className="p-4 text-right font-bold text-emerald-400 text-lg">
-                            ₹{req.amount.toLocaleString()}
-                          </td>
-                          <td className="p-4">
-                            <span className={`text-xs font-bold px-2 py-1 rounded border ${req.status === 'paid' ? 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50' : 'bg-yellow-950/30 text-yellow-500 border-yellow-900/50'}`}>
-                              {req.status === 'paid' ? 'PAID' : 'PENDING'}
-                            </span>
-                          </td>
-                          <td className="p-4 text-right">
-                            {req.status === 'pending' ? (
-                              <button onClick={() => handleApprovePayout(req)} className="text-xs font-bold bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-500 transition-colors">Mark Paid</button>
-                            ) : (
-                              <span className="text-xs text-slate-500 font-mono">Completed</span>
-                            )}
-                          </td>
+                  <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[560px]">
+                      <thead>
+                        <tr className="bg-slate-950/50 text-slate-500 font-mono text-xs uppercase border-b border-slate-800">
+                          <th className="p-4">Designer</th>
+                          <th className="p-4 text-right">Amount</th>
+                          <th className="p-4">Status</th>
+                          <th className="p-4 text-right">Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800">
+                        {payoutRequests.map(req => (
+                          <tr key={req.id} className="hover:bg-slate-800/50 transition-colors">
+                            <td className="p-4">
+                              <p className="font-bold text-white">{req.designerName}</p>
+                              <p className="font-mono text-sm text-slate-400">{req.designerEmail}</p>
+                            </td>
+                            <td className="p-4 text-right font-bold text-emerald-400 text-lg">
+                              ₹{req.amount.toLocaleString()}
+                            </td>
+                            <td className="p-4">
+                              <span className={`text-xs font-bold px-2 py-1 rounded border ${req.status === 'paid' ? 'bg-emerald-950/30 text-emerald-500 border-emerald-900/50' : 'bg-yellow-950/30 text-yellow-500 border-yellow-900/50'}`}>
+                                {req.status === 'paid' ? 'PAID' : 'PENDING'}
+                              </span>
+                            </td>
+                            <td className="p-4 text-right">
+                              {req.status === 'pending' ? (
+                                <button onClick={() => handleApprovePayout(req)} className="text-xs font-bold bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-500 transition-colors">Mark Paid</button>
+                              ) : (
+                                <span className="text-xs text-slate-500 font-mono">Completed</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </div>
@@ -597,18 +649,18 @@ function Admin() {
           {activeTab === 'templates' && (
             <div className="animate-in fade-in duration-300 flex flex-col h-full">
 
-              <div className="flex justify-between items-end mb-6 pb-6 border-b border-slate-800">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-end mb-6 pb-6 border-b border-slate-800 gap-4">
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">Master Template Studio</h2>
                   <p className="text-slate-400 font-mono text-sm">Build complex, layered templates that push directly to your clients.</p>
                 </div>
-                <button onClick={saveMasterTemplate} disabled={isSavingTemplate} className="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-colors shadow-lg disabled:opacity-50 flex items-center gap-2">
+                <button onClick={saveMasterTemplate} disabled={isSavingTemplate} className="px-6 sm:px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-colors shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 self-start sm:self-auto active:scale-95">
                   {isSavingTemplate ? "Deploying..." : "🚀 Deploy to Portal"}
                 </button>
               </div>
 
               {/* The Studio Workspace */}
-              <div className="flex-1 flex gap-6 min-h-150">
+              <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-150">
 
                 {/* LEFT: CANVAS */}
                 <div className="flex-[1.5] bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden relative">

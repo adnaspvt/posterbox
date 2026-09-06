@@ -60,7 +60,7 @@ export default function LeadCapture() {
               />
               <input
                 type="tel"
-                placeholder="+91 98765 43210"
+                placeholder="WhatsApp with Country Code (e.g. +1, +44, +91...)"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="flex-1 px-6 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"

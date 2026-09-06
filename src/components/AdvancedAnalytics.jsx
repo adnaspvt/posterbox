@@ -16,8 +16,8 @@ export default function AdvancedAnalytics({ campaigns }) {
     // Simulate time-series data
     const timeSeriesData = Array.from({ length: 7 }, (_, i) => ({
       day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
-      views: Math.floor(Math.random() * 500) + 100,
-      downloads: Math.floor(Math.random() * 200) + 30
+      views: ((i * 67 + 123) % 400) + 100,
+      downloads: ((i * 31 + 47) % 170) + 30
     }));
 
     const topCampaigns = [...campaigns]
@@ -137,7 +137,7 @@ export default function AdvancedAnalytics({ campaigns }) {
                   <span className="text-xl font-black text-indigo-600 w-8 text-center">#{idx + 1}</span>
                   <div>
                     <p className="font-bold text-slate-800">{camp.title}</p>
-                    <p className="text-xs text-slate-500">Created {new Date(camp.createdAt?.seconds * 1000 || Date.now()).toLocaleDateString()}</p>
+                    <p className="text-xs text-slate-500">Created {camp.createdAt?.seconds ? new Date(camp.createdAt.seconds * 1000).toLocaleDateString() : 'Recently'}</p>
                   </div>
                 </div>
                 <div className="text-right">

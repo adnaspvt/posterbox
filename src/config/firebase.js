@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
@@ -18,7 +18,11 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize & Export Core Firebase Services
 export const auth = getAuth(app);
+// Explicitly ensure local persistence across localhost sessions and tabs
+setPersistence(auth, browserLocalPersistence).catch(() => {});
+
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 export const db = getFirestore(app);
 
 // ==========================================
